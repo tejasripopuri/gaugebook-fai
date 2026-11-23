@@ -1,0 +1,612 @@
+{
+  "rows": [
+    {
+      "id": 1,
+      "name": "Overall length",
+      "source": "6.000 ±.010",
+      "xy": [
+        548,
+        100
+      ],
+      "bounds": [
+        5.99,
+        6.01
+      ],
+      "unit": "in",
+      "repeats": [
+        "Result"
+      ],
+      "category": "Dimension",
+      "crop": [
+        506,
+        115,
+        80,
+        21
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Overall width",
+      "source": "4.000 ±.010",
+      "xy": [
+        32,
+        476
+      ],
+      "bounds": [
+        3.99,
+        4.01
+      ],
+      "unit": "in",
+      "repeats": [
+        "Result"
+      ],
+      "category": "Dimension",
+      "crop": [
+        44,
+        429,
+        25,
+        92
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Plate thickness",
+      "source": ".500 ±.005",
+      "xy": [
+        955,
+        923
+      ],
+      "bounds": [
+        0.495,
+        0.505
+      ],
+      "unit": "in",
+      "repeats": [
+        "Result"
+      ],
+      "category": "Dimension",
+      "crop": [
+        973,
+        870,
+        33,
+        94
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Corner radius",
+      "source": "4X R.250 ±.010",
+      "xy": [
+        1040,
+        158
+      ],
+      "bounds": [
+        0.24,
+        0.26
+      ],
+      "unit": "in",
+      "repeats": [
+        "Upper left",
+        "Upper right",
+        "Lower left",
+        "Lower right"
+      ],
+      "category": "Dimension",
+      "crop": [
+        991,
+        170,
+        126,
+        29
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Bore diameter",
+      "source": "Ø1.250 +.002/-.000",
+      "xy": [
+        291,
+        276
+      ],
+      "bounds": [
+        1.25,
+        1.252
+      ],
+      "unit": "in",
+      "repeats": [
+        "Result"
+      ],
+      "category": "Dimension",
+      "crop": [
+        307,
+        287,
+        184,
+        24
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Bore through",
+      "source": "THRU",
+      "xy": [
+        420,
+        276
+      ],
+      "bounds": null,
+      "unit": "",
+      "repeats": [
+        "Result"
+      ],
+      "category": "Dimension",
+      "crop": [
+        307,
+        287,
+        184,
+        24
+      ],
+      "groupId": 5
+    },
+    {
+      "id": 7,
+      "name": "Counterbore diameter",
+      "source": "CBORE Ø1.750 ±.005",
+      "xy": [
+        285,
+        318
+      ],
+      "bounds": [
+        1.745,
+        1.755
+      ],
+      "unit": "in",
+      "repeats": [
+        "Result"
+      ],
+      "category": "Dimension",
+      "crop": [
+        307,
+        309,
+        264,
+        25
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Counterbore depth",
+      "source": ".125 ±.005 DP",
+      "xy": [
+        584,
+        320
+      ],
+      "bounds": [
+        0.12,
+        0.13
+      ],
+      "unit": "in",
+      "repeats": [
+        "Result"
+      ],
+      "category": "Dimension",
+      "crop": [
+        307,
+        309,
+        264,
+        25
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Chamfer size",
+      "source": ".030 CHAM · .XXX default",
+      "xy": [
+        284,
+        350
+      ],
+      "bounds": [
+        0.025,
+        0.035
+      ],
+      "unit": "in",
+      "repeats": [
+        "Result"
+      ],
+      "category": "Dimension",
+      "crop": [
+        307,
+        332,
+        128,
+        22
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Chamfer angle",
+      "source": "45° CHAM · angular default",
+      "xy": [
+        467,
+        346
+      ],
+      "bounds": [
+        44.5,
+        45.5
+      ],
+      "unit": "°",
+      "repeats": [
+        "Result"
+      ],
+      "category": "Dimension",
+      "crop": [
+        307,
+        332,
+        128,
+        22
+      ]
+    },
+    {
+      "id": 11,
+      "name": "Bore perpendicularity",
+      "source": "⊥ .003 A",
+      "xy": [
+        435,
+        377
+      ],
+      "bounds": [
+        0,
+        0.003
+      ],
+      "unit": "in",
+      "repeats": [
+        "Result"
+      ],
+      "category": "GD&T",
+      "crop": [
+        310,
+        352,
+        111,
+        34
+      ]
+    },
+    {
+      "id": 12,
+      "name": "Mounting hole diameter",
+      "source": "4X Ø.281 ±.005",
+      "xy": [
+        294,
+        550
+      ],
+      "bounds": [
+        0.276,
+        0.286
+      ],
+      "unit": "in",
+      "repeats": [
+        "Upper left",
+        "Upper right",
+        "Lower left",
+        "Lower right"
+      ],
+      "category": "Dimension",
+      "crop": [
+        308,
+        557,
+        154,
+        27
+      ]
+    },
+    {
+      "id": 13,
+      "name": "Mounting hole through",
+      "source": "4X THRU",
+      "xy": [
+        470,
+        550
+      ],
+      "bounds": null,
+      "unit": "",
+      "repeats": [
+        "Upper left",
+        "Upper right",
+        "Lower left",
+        "Lower right"
+      ],
+      "category": "Dimension",
+      "crop": [
+        308,
+        557,
+        154,
+        27
+      ],
+      "groupId": 12
+    },
+    {
+      "id": 14,
+      "name": "Hole position",
+      "source": "Position Ø.010 A B C · diametrical deviation",
+      "xy": [
+        502,
+        606
+      ],
+      "bounds": [
+        0,
+        0.01
+      ],
+      "unit": "in",
+      "repeats": [
+        "Upper left",
+        "Upper right",
+        "Lower left",
+        "Lower right"
+      ],
+      "category": "GD&T",
+      "crop": [
+        310,
+        587,
+        177,
+        36
+      ]
+    },
+    {
+      "id": 15,
+      "name": "Slot width",
+      "source": "SLOT .375 ±.005 WIDE",
+      "xy": [
+        653,
+        307
+      ],
+      "bounds": [
+        0.37,
+        0.38
+      ],
+      "unit": "in",
+      "repeats": [
+        "Result"
+      ],
+      "category": "Dimension",
+      "crop": [
+        663,
+        316,
+        159,
+        24
+      ]
+    },
+    {
+      "id": 16,
+      "name": "Slot length",
+      "source": "1.000 ±.010 LONG",
+      "xy": [
+        810,
+        373
+      ],
+      "bounds": [
+        0.99,
+        1.01
+      ],
+      "unit": "in",
+      "repeats": [
+        "Result"
+      ],
+      "category": "Dimension",
+      "crop": [
+        663,
+        339,
+        153,
+        24
+      ]
+    },
+    {
+      "id": 17,
+      "name": "Slot center to right edge",
+      "source": ".750 ±.010",
+      "xy": [
+        875,
+        804
+      ],
+      "bounds": [
+        0.74,
+        0.76
+      ],
+      "unit": "in",
+      "repeats": [
+        "Result"
+      ],
+      "category": "Dimension",
+      "crop": [
+        839,
+        765,
+        89,
+        28
+      ]
+    },
+    {
+      "id": 18,
+      "name": "Top face flatness",
+      "source": "⏥ .002",
+      "xy": [
+        454,
+        836
+      ],
+      "bounds": [
+        0,
+        0.002
+      ],
+      "unit": "in",
+      "repeats": [
+        "Result"
+      ],
+      "category": "GD&T",
+      "crop": [
+        360,
+        819,
+        86,
+        37
+      ]
+    },
+    {
+      "id": 19,
+      "name": "Material certificate",
+      "source": "1. MATERIAL: ALUMINUM 6061-T651 PLATE.",
+      "xy": [
+        1018,
+        251
+      ],
+      "bounds": null,
+      "unit": "",
+      "repeats": [
+        "Result"
+      ],
+      "category": "Drawing note",
+      "crop": [
+        1037,
+        239,
+        292,
+        28
+      ]
+    },
+    {
+      "id": 20,
+      "name": "Anodize certificate",
+      "source": "2. FINISH: ANODIZE PER MIL-PRF-8625, TYPE II, CLASS 1 (CLEAR).",
+      "xy": [
+        1018,
+        284
+      ],
+      "bounds": null,
+      "unit": "",
+      "repeats": [
+        "Result"
+      ],
+      "category": "Drawing note",
+      "crop": [
+        1037,
+        264,
+        291,
+        49
+      ]
+    },
+    {
+      "id": 21,
+      "name": "Surface roughness · maximum observed",
+      "source": "3. ALL MACHINED SURFACES 63 Ra MAX.",
+      "xy": [
+        1018,
+        321
+      ],
+      "bounds": [
+        0,
+        63
+      ],
+      "unit": "Ra",
+      "repeats": [
+        "Result"
+      ],
+      "category": "Drawing note",
+      "crop": [
+        1037,
+        312,
+        271,
+        27
+      ]
+    },
+    {
+      "id": 22,
+      "name": "Edge break · minimum observed",
+      "source": "4. BREAK ALL SHARP EDGES .005-.015.",
+      "xy": [
+        1018,
+        352
+      ],
+      "bounds": [
+        0.005,
+        0.015
+      ],
+      "unit": "in",
+      "repeats": [
+        "Result"
+      ],
+      "category": "Drawing note",
+      "crop": [
+        1037,
+        338,
+        274,
+        26
+      ]
+    },
+    {
+      "id": 23,
+      "name": "Edge break · maximum observed",
+      "source": "4. BREAK ALL SHARP EDGES .005-.015.",
+      "xy": [
+        1299,
+        352
+      ],
+      "bounds": [
+        0.005,
+        0.015
+      ],
+      "unit": "in",
+      "repeats": [
+        "Result"
+      ],
+      "category": "Drawing note",
+      "crop": [
+        1037,
+        338,
+        274,
+        26
+      ],
+      "groupId": 22
+    },
+    {
+      "id": 24,
+      "name": "Marking content, standard and location",
+      "source": "7. PART MARK P/N AND REV PER MIL-STD-130, .12 HIGH, APPROX WHERE SHOWN BY CUSTOMER.",
+      "xy": [
+        1018,
+        470
+      ],
+      "bounds": null,
+      "unit": "",
+      "repeats": [
+        "Result"
+      ],
+      "category": "Drawing note",
+      "crop": [
+        1037,
+        456,
+        257,
+        80
+      ]
+    },
+    {
+      "id": 25,
+      "name": "Marking height",
+      "source": "7. PART MARK P/N AND REV PER MIL-STD-130, .12 HIGH, APPROX WHERE SHOWN BY CUSTOMER.",
+      "xy": [
+        1298,
+        498
+      ],
+      "bounds": [
+        0.11,
+        0.13
+      ],
+      "unit": "in",
+      "repeats": [
+        "Result"
+      ],
+      "category": "Drawing note",
+      "crop": [
+        1037,
+        456,
+        257,
+        80
+      ],
+      "groupId": 24
+    }
+  ],
+  "references": [
+    "Basic locations per note 5: bore center 3.000 from left and 2.000 from bottom; hole spacing 5.000 horizontal and 3.000 vertical. No independent ± limits. The bore center has no explicit positional acceptance zone on this sheet; request engineering clarification before production use.",
+    "6. INTERPRET PER ASME Y14.5-2018.",
+    "8. FICTIONAL PART FOR TRAINING AND SOFTWARE TESTING ONLY.",
+    "Datum A: underside. B: left edge. C: bottom edge in top view. Establish the datum frame for the applicable GD&T checks.",
+    "Notes 3 and 4 apply to every machined surface and every sharp edge respectively. Enter the worst surface and edge extrema from a complete survey. Confirm the Ra unit with engineering; the drawing does not state it. For note 7, use the customer’s marking-location instruction."
+  ]
+}

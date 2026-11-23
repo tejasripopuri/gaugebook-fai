@@ -1,0 +1,219 @@
+import {propose} from "./callouts.mjs";
+import {matchPracticeImage} from "./practice-match.mjs";
+import {practiceLayout} from "./practice-views.mjs";
+import {detectViews,inside} from "./drawing-areas.mjs";
+import {drawingFile} from "./uploads.mjs";
+import {openSheets,dimensionLines,verifiedImageLines} from "./image-reader.mjs";
+import {generalRows} from "./general-plan.mjs";
+import {judge,summarize} from "./plan.mjs";
+const el=id=>document.getElementById(id),id=new URLSearchParams(location.search).get("drawing");
+const key="gaugebook-upload-"+id,read=(k,fallback)=>JSON.parse(localStorage.getItem(k)||"null")??fallback;
+let plan,doc,page=1,canvas,selected,scanning=false;
+let placing=null;
+const practice=practiceLayout(id);
+const areas=()=>plan.areas[page]||[];
+function sortRows(){plan.rows.sort((a,b)=>a.sheet-b.sheet||a.id-b.id);}
+function partition(){
+  const all=[...plan.rows,...plan.offView];
+  plan.rows=[];plan.offView=[];
+  for(const r of all)(!r.unplaced&&inside(plan.areas[r.sheet]||[],r.xy)?plan.rows:plan.offView).push(r);
+  sortRows();
+}
+const message=text=>el("message").textContent=text;
+const state=()=>read(key,{answers:{},evidence:{}});
+const active=()=>plan.rows.find(r=>r.id===selected);
+const onPage=()=>plan.rows.filter(r=>r.sheet===page);
+function save(){localStorage.setItem(key+"-plan",JSON.stringify(plan));}
+function changed(){plan.approved[page]=false;save();}
+function add(proposal,x,y){
+  const row={id:plan.next++,sheet:page,xy:[x,y],source:proposal.source,name:proposal.source||"New characteristic",
+    bounds:proposal.bounds,unit:"",confirmed:false,category:"Drawing requirement",repeats:Array.from({length:proposal.count},(_,i)=>proposal.count===1?"Result":"Occurrence "+(i+1))};
+  (inside(areas(),row.xy)?plan.rows:plan.offView).push(row);return row;
+}
+function resultStatus(row,value){
+  if(!row.bounds&&!row.confirmed&&row.method!=="attribute")return "Pending";
+  return judge(row,value);
+}
+function updateSummary(){
+  const data=state(),statuses=plan.rows.flatMap(r=>r.repeats.map((_,i)=>resultStatus(r,data.answers?.[r.id+"-"+i])));
+  const done=Array.from({length:doc.count},(_,i)=>plan.approved[i+1]).every(Boolean);
+  const status=summarize(done?statuses:[...statuses,"Pending"]);
+  el("summary").textContent=status;el("summary").className=status.toLowerCase();
+  el("counts").textContent=statuses.filter(s=>s!=="Pending").length+" of "+statuses.length+" results entered · "+Object.values(plan.approved).filter(Boolean).length+" of "+doc.count+" sheets reviewed";
+  el("forms").hidden=!done||!statuses.length;
+}
+function redraw(){
+  const rows=onPage(),row=active(),idx=r=>plan.rows.indexOf(r)+1;
+  el("reviewState").textContent=plan.approved[page]?"Sheet reviewed.":"Check each proposal against the image, including units, drawing notes, GD&T and general tolerances. Add missed callouts and remove false matches.";
+  if(plan.imageMatches?.[page]&&!plan.approved[page])el("reviewState").textContent="Proposed values come from the "+plan.imageMatches[page]+" reference layout. Verify each against the uploaded drawing before confirming.";
+  el("approve").disabled=!areas().length||scanning||plan.approved[page]||rows.some(r=>!r.confirmed);
+  el("scan").disabled=scanning||plan.scanned[page];el("sheet").disabled=scanning;
+  el("undo").hidden=!plan.deleted.length;
+  const select=el("rows");select.replaceChildren();
+  for(const r of rows)select.add(new Option(idx(r)+". "+r.name+(r.confirmed?"":" · Review"),r.id));
+  if(row)select.value=row.id;
+  el("paper").replaceChildren(canvas);
+  el("cancel").hidden=!placing;
+  el("paper").style.cursor=placing?"crosshair":"";
+  const off=plan.offView.filter(r=>r.sheet===page);el("outside").hidden=!off.length;el("outside").querySelector("summary").textContent=off.length+" unplaced callout"+(off.length===1?"":"s")+" to review";
+  el("unused").replaceChildren(...off.map(r=>new Option(r.name,r.id)));
+  el("attach").disabled=scanning||!areas().length;
+  for(const r of rows){
+    const pin=document.createElement("button");pin.className="pin"+(r===row?" active":"");pin.textContent=idx(r);
+    pin.style.left=r.xy[0]*100+"%";pin.style.top=r.xy[1]*100+"%";pin.title=r.name;if(placing)pin.style.pointerEvents="none";
+    pin.onclick=e=>{e.stopPropagation();selected=r.id;redraw();};el("paper").append(pin);
+  }
+  el("editor").hidden=!row;el("results").replaceChildren();
+  if(row){
+    const crop=el("sourceCrop");crop.hidden=!row.sourceBox;
+    if(row.sourceBox){
+      const [l,t,r,b]=row.sourceBox,x=Math.max(0,Math.floor(l*canvas.width)-8),y=Math.max(0,Math.floor(t*canvas.height)-8);
+      crop.width=Math.max(1,Math.min(canvas.width-x,Math.ceil(r*canvas.width)-x+8));
+      crop.height=Math.max(1,Math.min(canvas.height-y,Math.ceil(b*canvas.height)-y+8));
+      crop.getContext("2d").drawImage(canvas,x,y,crop.width,crop.height,0,0,crop.width,crop.height);
+    }
+    el("requirement").value=row.source;
+    const attribute=!row.bounds&&(row.method==="attribute"||row.confirmed);
+    el("method").value=attribute?"attribute":"numeric";
+    const data=state();
+    row.repeats.forEach((occ,i)=>{
+      const k=row.id+"-"+i,label=document.createElement("label"),input=document.createElement(attribute?"select":"input"),result=document.createElement("small");
+      label.textContent="Result"+(row.repeats.length>1?" · "+occ:"")+(row.unit?" ("+row.unit+")":"");
+      if(attribute){for(const v of ["","Pass","Fail"])input.add(new Option(v||"Select result",v));}
+      else {input.inputMode="decimal";input.placeholder="Enter measured value";}
+      input.value=data.answers?.[k]??"";
+      function show(){
+        const decision=resultStatus(row,input.value);result.textContent=!attribute&&!row.bounds?"Pending · verify the tolerance in Requirement":decision;
+        result.className=decision.toLowerCase();
+      }
+      input.oninput=()=>{const latest=state();(latest.answers??={})[k]=input.value;localStorage.setItem(key,JSON.stringify(latest));show();updateSummary();};
+      input.id="result-"+k;label.htmlFor=input.id;
+      const field=document.createElement("div");field.className="field";show();field.append(label,input,result);el("results").append(field);
+    });
+  }
+  updateSummary();
+}
+function editingRequirement(){
+  const row=active(),storedMethod=row.bounds||(!row.confirmed&&row.method!=="attribute")?"numeric":"attribute";
+  const dirty=el("requirement").value.trim()!==row.source||el("method").value!==storedMethod;
+  for(const input of el("results").querySelectorAll("input,select"))input.disabled=dirty;
+  if(dirty)message("Confirm the changed requirement before entering its result.");
+}
+el("requirement").oninput=editingRequirement;el("method").onchange=editingRequirement;
+el("rows").onchange=e=>{selected=Number(e.target.value);redraw();};
+el("cancel").onclick=()=>{placing=null;redraw();};
+el("attach").onclick=()=>{placing=Number(el("unused").value);message("Click the corresponding drawing feature.");redraw();};
+el("paper").onclick=async e=>{
+  if(scanning||e.target!==canvas)return;
+  const rect=canvas.getBoundingClientRect(),point=[(e.clientX-rect.left)/rect.width,(e.clientY-rect.top)/rect.height];
+  if(!inside(areas(),point)){message("Place balloons on a detected drawing view.");return;}
+  if(placing){
+    const i=plan.offView.findIndex(r=>r.id===placing);
+    const [r]=plan.offView.splice(i,1);r.xy=point;r.unplaced=false;plan.rows.push(r);sortRows();selected=r.id;placing=null;
+  }else {const row=add({source:"",bounds:null,count:1},...point);row.manual=true;selected=row.id;}
+  changed();redraw();el("requirement").focus();
+};
+el("editor").onsubmit=e=>{
+  e.preventDefault();const r=active(),source=el("requirement").value.trim();
+  if(!source)return;
+  const method=el("method").value;
+  const parsed=propose(source);
+  const bounds=method==="attribute"?null:source===r.source&&r.bounds?r.bounds:parsed.length===1?parsed[0].bounds:null;
+  if(method==="numeric"&&!bounds){
+    message("Enter the drawing tolerance in Requirement, for example 2.500 ±.005, then confirm.");return;
+  }
+  const modified=source!==r.source||JSON.stringify(bounds)!==JSON.stringify(r.bounds)||method==="attribute"&&!r.confirmed&&r.method!=="attribute";
+  if(modified){
+    const latest=state(),keys=r.repeats.map((_,i)=>r.id+"-"+i);
+    if(keys.some(k=>latest.answers?.[k])){
+      if(!confirm("Changing this requirement clears its recorded results. Continue?"))return;
+      keys.forEach(k=>delete latest.answers[k]);localStorage.setItem(key,JSON.stringify(latest));
+    }
+  }
+  Object.assign(r,{name:r.name===r.source||!r.source?source:r.name,source,method,bounds,confirmed:true});
+  changed();redraw();message("Characteristic confirmed.");
+};
+el("delete").onclick=()=>{const r=active();if(!confirm("Delete this balloon and renumber the remaining entries?"))return;
+  const i=plan.rows.indexOf(r);plan.deleted.push({i,row:r});plan.rows.splice(i,1);selected=onPage()[0]?.id;changed();redraw();};
+el("undo").onclick=async()=>{const {i,row}=plan.deleted.pop();plan.rows.splice(i,0,row);partition();plan.approved[row.sheet]=false;save();await show(row.sheet,plan.rows.includes(row)?row.id:undefined);};
+el("approve").onclick=()=>{if(confirm("Confirm that all applicable requirements on this sheet have been accounted for?")){plan.approved[page]=true;save();redraw();}};
+async function scan(){
+  if(scanning||plan.scanned[page])return;scanning=true;redraw();message("Locating drawing features and numbering characteristics…");
+  try{
+    const existing=[...plan.rows,...plan.offView].filter(r=>r.sheet===page);
+    function insert(proposal,x,y,off=false){
+      const previous=existing.find(r=>r.source===proposal.source&&Math.hypot(r.xy[0]-x,r.xy[1]-y)<.025);
+      if(previous){
+        if(!off&&plan.offView.includes(previous)){
+          previous.unplaced=false;previous.xy=[x,y];plan.offView.splice(plan.offView.indexOf(previous),1);plan.rows.push(previous);
+        }
+        return;
+      }
+      if(plan.deleted.some(({row:r})=>r.sheet===page&&r.source===proposal.source&&Math.hypot(r.xy[0]-x,r.xy[1]-y)<.025))return;
+      const row=add(proposal,x,y);
+      row.name=proposal.name||row.name;row.unit=proposal.unit||"";
+      row.unplaced=off;row.sourceBox=proposal.sourceBox;
+      if(off&&plan.rows.includes(row)){plan.rows.splice(plan.rows.indexOf(row),1);plan.offView.push(row);}
+    }
+    const layout=practice||await matchPracticeImage(canvas);
+    if(layout){
+      if(layout.part)(plan.imageMatches??={})[page]=layout.part;
+      plan.areas[page]=layout.areas;
+      partition();
+      for(const p of layout.rows)insert(p,...p.xy);
+      for(const p of layout.supplemental)insert(p,...p.xy,true);
+    }else{
+      const embedded=await doc.labels?.(page).catch(()=>[])||[];
+      let ocr;
+      try{ocr=await dimensionLines(canvas);}catch(error){if(!embedded.length)throw error;ocr=[];}
+      const lines=verifiedImageLines(ocr,embedded);
+      plan.areas[page]=detectViews(canvas,lines);
+      partition();
+      for(const row of generalRows(lines,areas(),canvas.width,canvas.height))insert(row,...row.xy,row.off);
+      (plan.generalVersion??={})[page]=2;
+    }
+    sortRows();(plan.dimensionOnly??={})[page]=true;plan.scanned[page]=true;selected=onPage()[0]?.id;changed();
+    message(plan.imageMatches?.[page]?"Automatic numbering complete. Image layout matches "+plan.imageMatches[page]+". Check each proposed value against the uploaded revision before confirming it.":onPage().length?"Automatic numbering complete. Review the balloons against the drawing.":"No dimensions could be placed confidently. Check the original sheet and any unplaced text.");
+  }catch(e){message("Image reading failed. Click the drawing to enter a callout manually, or retry. "+e.message);}
+  finally{scanning=false;redraw();}
+}
+async function show(n,selection){
+  el("sheet").disabled=true;el("scan").disabled=true;
+  canvas=await doc.render(n);page=n;
+  if(plan.scanned[n]&&!plan.dimensionOnly?.[n]){
+    // Preserve saved entries as unnumbered until the new pass matches their source.
+    const old=plan.rows.filter(r=>r.sheet===n);
+    old.forEach(r=>{r.unplaced=true;});
+    plan.offView.push(...old);plan.rows=plan.rows.filter(r=>r.sheet!==n);
+    plan.scanned[n]=false;plan.approved[n]=false;save();
+  }
+  placing=null;el("sheet").value=n;selected=selection??onPage()[0]?.id;redraw();
+}
+el("sheet").onchange=async e=>{await show(Number(e.target.value));if(!plan.scanned[page]&&!plan.approved[page])await scan();};
+el("scan").onclick=scan;
+window.addEventListener("storage",e=>{if(e.key===key&&canvas)redraw();});
+try{
+  const file=await drawingFile(id);if(!file)throw Error("Upload this file in the inspection workspace to open it in this browser.");
+  doc=await openSheets(file);el("source").href=URL.createObjectURL(file);
+  plan=read(key+"-plan",{name:file.name,rows:[],approved:{},scanned:{},next:1,deleted:[],custom:true});
+  plan.areas??={};plan.offView??=[];
+  if(!plan.autoViews){
+    // Rebuild untouched OCR drafts. Preserve confirmed requirements, answers and deletions.
+    const reviewed=[...plan.rows,...plan.offView].filter(r=>r.confirmed);
+    plan.offView=[];plan.rows=reviewed;
+    plan.scanned={};plan.approved={};plan.autoViews=true;
+  }
+  el("title").textContent=file.name;el("forms").href="forms.html?drawing="+id;
+  for(let i=1;i<=doc.count;i++)el("sheet").add(new Option(i,i));
+  plan.pageCount=doc.count;save();await show(1);
+  if(!practice&&doc.count===1&&plan.scanned[1]&&!plan.imageMatches?.[1]&&!plan.checkedImageLayout){
+    const matched=await matchPracticeImage(canvas);
+    if(matched){
+      const keep=r=>r.confirmed||!r.source||r.manual;
+      plan.rows=plan.rows.filter(keep);plan.offView=plan.offView.filter(keep);
+      plan.scanned[1]=false;plan.approved[1]=false;
+    }
+    plan.checkedImageLayout=true;save();
+  }
+  if(!plan.scanned[1]&&!plan.approved[1])await scan();else message("Saved inspection opened.");
+}catch(e){message("Unable to open drawing. "+e.message);}
