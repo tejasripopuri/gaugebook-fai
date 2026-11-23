@@ -50,3 +50,16 @@ test("only view dimensions receive balloons on unfamiliar drawings",()=>{
   assert.deepEqual(rows[0].xy,rows[1].xy);
   assert.deepEqual(rows[0].sourceBox,[.795,.196,.805,.204]);
 });
+
+test("angular requirements inherit the current sheet's readable tolerance",async()=>{
+  const {drawingAngleDefault}=await import("../public/callouts.mjs");
+  const read=(...texts)=>drawingAngleDefault(texts.map(text=>({text})));
+  const rule=read("TOLERANCES: ANG ±0.5°");
+  assert.deepEqual(propose(".030 X 45° CHAM",rule)[1],{source:"45° ±0.5° CHAM",bounds:[44.5,45.5],count:1,unit:"°"});
+  assert.deepEqual(propose("60°",read("ANGLES +/- 1°"))[0].bounds,[59,61]);
+  assert.deepEqual(propose("60° ±0.1°",rule)[0].bounds,[59.9,60.1]);
+  assert.deepEqual(propose("30°",read("ANGULAR ±30′"))[0].bounds,[29.5,30.5]);
+  assert.equal(propose("45° CHAM",read("ANGLES ±1°","ANGLES ±2°"))[0].bounds,null);
+  assert.equal(propose("45° REF",rule)[0].bounds,null);
+  assert.equal(propose("45° CHAM")[0].bounds,null);
+});
