@@ -220,7 +220,7 @@
     {
       "id": 10,
       "name": "Chamfer angle",
-      "source": "45° CHAM · angular default",
+      "source": "45° ±0.5° CHAM",
       "xy": [
         467,
         346

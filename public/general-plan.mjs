@@ -1,4 +1,4 @@
-import {propose} from "./callouts.mjs";
+import {propose,drawingAngleDefault} from "./callouts.mjs";
 import {anchorFor,inside} from "./drawing-areas.mjs";
 
 const number=/(?:\d+[.,]?\d*|[.,]\d+)/;
@@ -26,17 +26,18 @@ function place(point,areas,used){
 }
 export function generalRows(lines,areas,width,height){
   const rows=[],used=[];
+  const angular=drawingAngleDefault(lines);
   const sideHeadings=lines.filter(l=>/^(?:feature requirements|feature center locations|inspection notes|general notes|hole (?:table|chart)|coordinates|bill of materials|revision history)\s*:?$/i.test(l.text.trim()));
   for(const line of lines){
     const text=line.text.trim(),point=center(line,width,height);
-    if(!text||metadata.test(text)||label(text))continue;
+    if(!text||metadata.test(text)||label(text)||/\b(?:ANG(?:ULAR)?|ANGLES?)\s*(?:TOL(?:ERANCES?)?\.?)?\s*[:=]?\s*(?:±|\+\s*\/\s*[-−])/i.test(text))continue;
     const tag=text.match(/^([A-Z]\d?)\s+(?=\d|Ø|⌀|CBORE|SLOT|DIA|POCKET|R\d)/i);
     const isDim=dimension(text.replace(/^\s*\d+\s*[xX×]\s*/, ""));
     if(!isDim&&!annotation.test(text))continue;
     const prose=annotation.test(text)||/\b(?:notes?|certificate|specification|unless|coordinate[s]?|table|locations?|tolerances apply|per\s+(?:ASME|ISO|MIL)|aluminum|stainless|steel)\b/i.test(text);
     const remoteTag=tag&&!inside(areas,point);
     const inPanel=sideHeadings.some(h=>line.bbox.y0>=h.bbox.y0&&line.bbox.x0>=h.bbox.x0-width*.012&&line.bbox.x0<h.bbox.x0+width*.34);
-    const proposals=propose(tag?text.slice(tag[0].length):text);
+    const proposals=propose(tag?text.slice(tag[0].length):text,prose?null:angular);
     for(const p of proposals){
       const anchor=isDim&&!prose&&!remoteTag&&!inPanel?anchorFor(areas,...point):null;
       const xy=anchor?place(anchor,areas,used):point;

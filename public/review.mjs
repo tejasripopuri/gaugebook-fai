@@ -1,4 +1,4 @@
-import {propose} from "./callouts.mjs";
+import {propose,drawingAngleDefault} from "./callouts.mjs";
 import {matchPracticeImage} from "./practice-match.mjs";
 import {practiceLayout} from "./practice-views.mjs";
 import {detectViews,inside} from "./drawing-areas.mjs";
@@ -170,7 +170,7 @@ async function scan(){
       plan.areas[page]=detectViews(canvas,lines);
       partition();
       for(const row of generalRows(lines,areas(),canvas.width,canvas.height))insert(row,...row.xy,row.off);
-      (plan.generalVersion??={})[page]=2;
+      (plan.generalVersion??={})[page]=3;
     }
     sortRows();(plan.dimensionOnly??={})[page]=true;plan.scanned[page]=true;selected=onPage()[0]?.id;changed();
     message(plan.imageMatches?.[page]?"Automatic numbering complete. Image layout matches "+plan.imageMatches[page]+". Check each proposed value against the uploaded revision before confirming it.":onPage().length?"Automatic numbering complete. Review the balloons against the drawing.":"No dimensions could be placed confidently. Check the original sheet and any unplaced text.");
@@ -186,6 +186,22 @@ async function show(n,selection){
     old.forEach(r=>{r.unplaced=true;});
     plan.offView.push(...old);plan.rows=plan.rows.filter(r=>r.sheet!==n);
     plan.scanned[n]=false;plan.approved[n]=false;save();
+  }
+  if(plan.scanned[n]&&plan.generalVersion?.[n]===2){
+    const pending=[...plan.rows,...plan.offView].filter(r=>r.sheet===n&&!r.confirmed&&!r.manual&&!r.bounds&&/°|degrees?\b/i.test(r.source));
+    if(pending.length){
+      const embedded=await doc.labels?.(n).catch(()=>[])||[];
+      let ocr;
+      try{ocr=await dimensionLines(canvas);}catch(error){if(!embedded.length)throw error;ocr=[];}
+      const angular=drawingAngleDefault(verifiedImageLines(ocr,embedded));
+      for(const row of pending){
+        const parts=propose(row.source,angular);
+        if(parts.length!==1||!parts[0].bounds)continue;
+        if(row.name===row.source)row.name=parts[0].source;
+        Object.assign(row,{source:parts[0].source,bounds:parts[0].bounds,unit:"°"});
+      }
+    }
+    plan.generalVersion[n]=3;save();
   }
   placing=null;el("sheet").value=n;selected=selection??onPage()[0]?.id;redraw();
 }
