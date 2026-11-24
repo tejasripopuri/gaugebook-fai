@@ -74,7 +74,7 @@ export async function makePacket(template,report,results,forms){
   }
   if(forms.includes(3)){
     const records=results.map(r=>[r.balloon,r.location,r.designator,r.requirement,r.result,r.tool,r.nc,r.comments]);
-    await table(2,records,[34.3,88.8,212,296.4,394.9,475.6,552.5,696.6,765.2],196.5,15.48,22,7,
+    await table(2,records,[34.3,88.8,212,296.4,394.9,475.6,552.5,622.7,765.2],196.5,15.48,22,7,
       page=>columns(page,ids,[34.3,394.9,622.7,696.6,765.2],109,31,8));
   }
   pages.forEach((page,i)=>{
