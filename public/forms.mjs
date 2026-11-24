@@ -1,5 +1,5 @@
 import {digest,judge} from "./plan.mjs";
-import {identity,partFields,materialFields,componentFields,initialReport,resultRows} from "./report-data.mjs";
+import {identity,partFields,materialFields,componentFields,initialReport,resultRows,formatResult} from "./report-data.mjs";
 import {makePacket} from "./report-pdf.mjs";
 const root=document.querySelector("#editor"),notice=document.querySelector("#notice");
 const drawingId=new URLSearchParams(location.search).get("drawing");
@@ -85,7 +85,7 @@ function render(){
         const status=judge(row,input.value);
         decision.textContent=row.bounds&&input.value&&status==="Pending"?"Enter a decimal number":status;
         summary.textContent="Balloon "+r.balloon+" · "+r.location+" · "+
-          (row.bounds&&status!=="Pending"?input.value+" "+row.unit+" · ":"")+status+(throughInput?" · THRU "+(throughInput.value||"Pending"):"");
+          formatResult(row,input.value,status,throughInput?(throughInput.value||"Pending"):null);
         try{localStorage.setItem(key,JSON.stringify(inspection));notice.textContent="Saved to your account.";}
         catch{notice.textContent="Result could not be saved. Check browser storage and retry.";}
       };

@@ -6,6 +6,10 @@ export function initialReport(plan) {
   if(plan?.custom)return {part:{"Part name":plan.name.replace(/\.[^.]+$/,"")},products:[[]],tests:{},extra:{}};
   return {part:{"Part number":"SMP-1001","Part name":"Adapter Plate","Part revision":"A","Drawing number":"SMP-1001","Drawing revision":"A"},products:[["6061-T651 aluminum plate","SMP-1001 Rev A, note 1"],["Clear anodize","MIL-PRF-8625, Type II, Class 1"]],tests:{},extra:{}};
 }
+export function formatResult(row,value,status,throughStatus){
+  const overall=status==="Fail"||throughStatus==="Fail"?"Fail":throughStatus==="Pending"?"Pending":status;
+  return row.bounds&&status!=="Pending"?value+" "+row.unit+" · "+overall:overall;
+}
 export function resultRows(plan,inspection,report) {
   const numbered=numberedRows(plan,inspection.removed);
   const throughByParent=new Map();
@@ -24,7 +28,7 @@ export function resultRows(plan,inspection,report) {
     const combined=(field)=>[...new Set([extra[field],throughExtra[field]].filter(Boolean))].join(" / ");
     return {key,throughKey,throughStatus,id:r.id,balloon:r.balloon,location:"Sheet "+(r.sheet||1)+" · "+r.name+(occ==="Result"?"":" · "+occ),
       requirement:through&&!/\bTHRU\b/i.test(r.source)?r.source+" THRU":r.source,
-      result:(status==="Pending"?"Pending":r.bounds?val+" "+r.unit+" · "+status:status)+(through?" · THRU "+throughStatus:""),
+      result:formatResult(r,val,status,throughStatus),
       designator:combined("designator"),tool:combined("tool"),nc:combined("nc"),comments:[inspection.evidence?.[r.id],through&&inspection.evidence?.[through.id],combined("comments")].filter(Boolean).join(" / ")};
   }));
 }
