@@ -18,7 +18,7 @@ const style = document.createElement("style");
 style.textContent = `.gb-account{display:flex;align-items:center;gap:14px;font-size:.9rem}.gb-account .who{opacity:.85}
 .gb-account button{background:transparent;border:1px solid #6f978f;padding:5px 12px;font-size:.85rem}
 .gb-status{font-size:.8rem;padding:3px 9px;border-radius:12px;background:#1d5047;color:#d8eee6;white-space:nowrap}
-.gb-status.warn{background:#7a4a10;color:#fff2dc}header{flex-wrap:wrap;gap:10px}`;
+.gb-status.warn{background:#7a4a10;color:#fff2dc}main[inert]{opacity:.6;transition:opacity .2s}header{flex-wrap:wrap;gap:10px}`;
 document.head.append(style);
 const status = document.createElement("span");
 status.className = "gb-status";
@@ -251,9 +251,20 @@ async function start() {
   return true;
 }
 
+// Keep the page inactive until its own script has wired up its buttons, so an early
+// click (e.g. on "Upload drawing") is never silently ignored.
+const main = document.querySelector("main");
+function ready() {
+  if (main) main.inert = false;
+  document.documentElement.dataset.ready = "1";
+}
+if (main) main.inert = true;
+document.addEventListener("gaugebook:ready", ready, { once: true });
+
 if (await start()) {
   if (entry === "app.mjs") listDrawings().catch(() => {});
-  if (entry && /^[\w-]+\.mjs$/.test(entry)) await import("./" + entry);
+  if (entry && /^[\w-]+\.mjs$/.test(entry)) await import("./" + entry).finally(ready);
+  else ready();
   // Fix copy that described browser-only storage.
   for (const el of document.querySelectorAll(".foot")) {
     for (const n of el.childNodes) if (n.nodeType === 3) n.textContent = n.textContent.replace("Inspections are saved in this browser.", "Inspections are saved to your account.");

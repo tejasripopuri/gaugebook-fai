@@ -124,6 +124,7 @@ el("reset").onclick=()=>{
 el("upload").onclick=()=>el("file").click();
 async function run(file) {
   el("upload").disabled=true;
+  document.dispatchEvent(new Event("gaugebook:ready"));
   try {
     if(file){
       // Only the known sample can inherit its pre-reviewed characteristics.
