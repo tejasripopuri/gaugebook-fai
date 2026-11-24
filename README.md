@@ -3,14 +3,14 @@ A browser-based inspection register for uploaded engineering drawings. Each uplo
 
 ## 1. Run the app on Windows
 1. Extract the ZIP. Open the folder containing this README and type **powershell** in File Explorer’s address bar.
-2. With Node.js 22 or later installed, run `npm install`, then `npm run dev`.
+2. With Node.js 22 or later and Docker installed, run `npm install`, then `npm run dev`. This starts a local PostgreSQL database in Docker and the app.
 3. Open http://localhost:3000 and create an account. The sample opens automatically. Select **Upload drawing** and choose the supplied PDF or its included full-sheet image, public/drawing.png. Click a balloon to see its cropped source and automatic OCR draft.
 4. Select **Balloon 5 · Bore diameter**. Enter 1.250, then 1.249. The first passes and the second fails. Clear the field to return it to pending.
 5. Select balloon 11 and enter a separate diameter for each mounting hole. Record a certificate reference for material and finish and select the verified outcome. Select **Drawing references and inspection instructions** for the basic locations and datum definitions.
 6. Any failing result makes the part fail immediately. All 37 results must pass for an overall pass. Other states display **Not yet inspected** with the progress count. The reset control clears this inspection after confirmation.
 
 ## 2. Verify and understand the build
-1. With Node.js 22 or later, run `npm test` in the root. No npm install or build step is needed.
+1. With Node.js 22 or later, run `npm install`, then `npm test` in the root. The API tests also need a PostgreSQL database: set `DATABASE_URL` to run them; without it they are skipped. CI runs them against PostgreSQL and also builds the Docker image.
 2. The image reader rasterizes PDFs with PDF.js or decodes PNG/JPEG uploads. It compares small image tiles across the whole sheet against the reviewed SMP-1001 renderings. A match loads 25 reviewed characteristics from public/reviewed-plan.json. Selecting a balloon crops its uploaded pixels, rotates vertical callouts and runs bundled Tesseract OCR locally. Compare the OCR draft to the source crop. The reviewed limits drive acceptance because OCR can confuse signs, decimals and GD&T symbols. Other drawings open a separate review workspace. Drawing views are located automatically. The three supplied practice PDFs use feature locations checked against the drawings. For other layouts, the app detects views in the image and reads upright and vertical labels. When a PDF contains positioned text, the app uses it to supplement the OCR. Automatic balloons represent dimensional callouts shown in the drawing views, including geometric tolerances. Notes and feature-table entries are available separately. The inspector can compare each proposed requirement with its source crop. Off-view notes can be attached to a feature from the inspection register. The app reads each PDF page or PNG/JPEG as an image, proposes balloon locations and explicit tolerance limits, and lets the inspector correct or add characteristics before confirming each sheet. Re-uploading the same file reopens its inspection.
 3. Tests compare the reviewed register with independently transcribed limits from the drawing and check repeated features, boundary values and status precedence. Pixel-matching tests check noise and local image changes.
 4. Note 5 basic dimensions are reference geometry. Notes 6 and 8 are interpretation and training context. Notes 1–4 and 7 have acceptance entries. The radius, hole size, through and position callouts each have four occurrences. Note 4 is split into observed minimum and maximum. Note 7 is split into marking content/location and height; its approximate location needs customer input. Confirm the drawing's Ra unit before physical inspection. Overall pass describes the defined training checks only. The app does not issue an approved FAIR.
@@ -29,25 +29,51 @@ The source tree contains the running app, test suite, CI workflow and example fo
 - **Header:** shows a save-status chip and **Sign out**. Changes made offline are queued and sent when the connection returns.
 - **Drawings:** `public/uploads.mjs` caches drawings in the browser and uploads them to the account. The workspace page lists the user's uploaded drawings.
 
-The API is a set of Vercel Functions in `api/`, with shared code in `lib/`:
+`server.mjs` serves the app and the API in `api/`. Data is kept in **PostgreSQL** (`lib/db.mjs`):
+
+| Table | Holds |
+|---|---|
+| `users` | Accounts (scrypt-hashed passwords) |
+| `entries` | Saved inspections, report forms and drawing reviews, with a version number |
+| `drawings` | Uploaded drawing details; the files themselves are stored privately on disk (`FILES_DIR`) |
+| `audit_events` | Every sign-up, sign-in, save, deletion and upload, keeping the value each change replaced |
 
 | Endpoint | Purpose |
 |---|---|
-| `POST /api/auth/signup`, `/login`, `/logout` · `GET /api/auth/me` | Accounts (scrypt-hashed passwords, HttpOnly signed session cookie, 30 days) |
-| `GET /api/state` · `PUT`/`DELETE /api/state?key=gaugebook-…` | The user's saved inspections, report forms and drawing reviews |
-| `GET /api/drawings` · `GET`/`POST /api/drawings?id=<sha256>` | List, download and upload drawings (PDF, PNG, JPEG, up to 100 MB, uploaded directly to storage) |
-
-Data lives in a **private Vercel Blob store**: `users/<hash of email>.json` and `data/<userId>/…`.
-
-To run locally, run `npm install`, then `npm run dev`, and open http://localhost:3000. Without a Blob token, data is kept in `.data/`.
+| `POST /api/auth/signup`, `/login`, `/logout` · `GET /api/auth/me` | Accounts (HttpOnly signed session cookie, 30 days; 10 failed sign-ins per 15 min limit) |
+| `GET /api/state` · `PUT`/`DELETE /api/state?key=gaugebook-…` | The user's saved entries |
+| `GET /api/drawings` · `GET`/`POST /api/drawings?id=<sha256>` | List, download and upload drawings (PDF, PNG, JPEG up to 100 MB; checked against their hash and file type) |
+| `GET /api/health` | Health check |
 
 Known limits:
 - There is no password reset yet.
-- Sign-in attempts aren't rate-limited.
-- If the same inspection is edited on two devices at once, the last save wins.
+- If the same inspection is edited on two devices at once, the last save wins. The earlier value is kept in `audit_events`.
 
-## 5. Publish on Vercel
-1. Sign in to Vercel. Choose Add New → Project and import this GitHub repository. Framework: **Other**. `vercel.json` sets the output directory (`public`), no build step and `npm install`.
-2. **Storage → Create → Blob**, choose **Private** access, and connect it to the project. This adds `BLOB_READ_WRITE_TOKEN`.
-3. **Settings → Environment Variables**: add `SESSION_SECRET`, a random value of at least 32 characters (e.g. `openssl rand -base64 48`). Then redeploy.
-4. Pushes to `main` deploy to production once Git integration is connected. Other branches get preview URLs.
+## 5. Deploy on a Hostinger VPS
+The app runs on the VPS as three Docker containers (`compose.yaml`): PostgreSQL, the app, and Caddy, which provides automatic HTTPS.
+
+1. **Get a VPS.** In Hostinger, buy a **KVM 1** or **KVM 2** VPS. Choose the **Ubuntu 24.04** operating system (plain, with no control panel) and set a strong root password or add your SSH key.
+2. **Open a terminal on it.** Use hPanel → VPS → **Browser terminal**, or run `ssh root@<server IP>` from your computer.
+3. **Install with one command:**
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/tejasripopuri/gaugebook-fai/main/deploy/install.sh | bash
+   ```
+   The installer:
+   - installs Docker
+   - turns on the firewall (SSH, HTTP and HTTPS only)
+   - generates the database password and session secret into `/opt/gaugebook/.env`, which is readable only by root
+   - starts the app and schedules nightly backups
+
+   When it finishes, it prints the address, such as `https://82-12-34-56.sslip.io`. That's a free name for your server's IP, and it gets a real HTTPS certificate.
+4. **Use your own domain (later).** Add a DNS **A record** pointing the domain, e.g. `gaugebook.example.com`, to the server's IP. Then run `/opt/gaugebook/deploy/set-domain.sh gaugebook.example.com`.
+
+Day-to-day, in `/opt/gaugebook`:
+
+| Task | Command |
+|---|---|
+| Update to the latest version on GitHub (backs up first) | `deploy/update.sh` |
+| Back up now (also runs nightly at 02:30, keeps 14 days in `backups/`) | `deploy/backup.sh` |
+| Restore a backup | `deploy/restore.sh <timestamp>` |
+| Status and logs | `docker compose ps` · `docker compose logs --tail=100 app` |
+
+Backups are stored on the same server. Also copy `backups/` off the server regularly, for example to your computer with `scp -r root@<server IP>:/opt/gaugebook/backups .`, or turn on Hostinger's VPS snapshots/backups. Keep `/opt/gaugebook/.env` safe: it holds the database password and session secret.

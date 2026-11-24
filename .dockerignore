@@ -1,0 +1,12 @@
+.git
+.github
+node_modules
+.data
+.env
+.vercel
+backups
+tests
+examples
+*.bundle
+*.pdf
+!public/**/*.pdf
