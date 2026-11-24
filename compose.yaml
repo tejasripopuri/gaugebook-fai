@@ -1,0 +1,56 @@
+# Production stack: PostgreSQL + Gaugebook app + Caddy (automatic HTTPS).
+# Settings come from .env (created by deploy/install.sh).
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: gaugebook
+      POSTGRES_USER: gaugebook
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in .env}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gaugebook -d gaugebook"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    logging: &logging
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      DATABASE_URL: postgres://gaugebook:${POSTGRES_PASSWORD}@db:5432/gaugebook
+      SESSION_SECRET: ${SESSION_SECRET:?set in .env}
+      FILES_DIR: /data/files
+      TRUST_PROXY: "1"
+    volumes:
+      - files:/data/files
+    logging: *logging
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on: [app]
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:?set in .env}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    logging: *logging
+
+volumes:
+  db-data:
+  files:
+  caddy-data:
+  caddy-config:

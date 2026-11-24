@@ -1,0 +1,9 @@
+# Local development database only: `npm run dev` starts it and runs the app on http://localhost:3000.
+services:
+  db:
+    image: postgres:16-alpine
+    environment: { POSTGRES_DB: gaugebook, POSTGRES_USER: gaugebook, POSTGRES_PASSWORD: gaugebook }
+    ports: ["127.0.0.1:5433:5432"]
+    volumes: [dev-db:/var/lib/postgresql/data]
+volumes:
+  dev-db:

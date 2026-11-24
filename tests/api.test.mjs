@@ -1,22 +1,35 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-process.env.LOCAL_DATA_DIR = mkdtempSync(path.join(tmpdir(), "gb-test-"));
+// Needs PostgreSQL: set DATABASE_URL (CI provides one). Uses a fresh schema per run.
+const skip = !process.env.DATABASE_URL && "set DATABASE_URL to run the API tests";
+process.env.FILES_DIR = mkdtempSync(path.join(tmpdir(), "gb-files-"));
+if (!skip) {
+  const schema = "test_" + Date.now();
+  const pg = (await import("pg")).default;
+  const c = new pg.Client({ connectionString: process.env.DATABASE_URL });
+  await c.connect(); await c.query(`create schema ${schema}`); await c.end();
+  const u = new URL(process.env.DATABASE_URL);
+  u.searchParams.set("options", `-c search_path=${schema}`);
+  process.env.DATABASE_URL = u.toString();
+}
 const signup = await import("../api/auth/signup.mjs");
 const login = await import("../api/auth/login.mjs");
 const me = await import("../api/auth/me.mjs");
 const state = await import("../api/state.mjs");
 const drawings = await import("../api/drawings.mjs");
+const db = await import("../lib/db.mjs");
 
 const B = "https://gb.example";
 const req = (p, init = {}) => new Request(B + p, init);
 const post = (p, body, cookie) => req(p, { method: "POST", body: JSON.stringify(body), headers: { "content-type": "application/json", ...(cookie && { cookie }) } });
 const cookieOf = (res) => res.headers.get("set-cookie").split(";")[0];
 
-test("signup, login, session, isolation and validation", async () => {
+test("signup, login, session, isolation and validation", { skip }, async () => {
   let res = await signup.POST(post("/api/auth/signup", { name: "Ana", email: "Ana@Example.com", password: "short" }));
   assert.equal(res.status, 400);
   res = await signup.POST(post("/api/auth/signup", { name: "Ana", email: "Ana@Example.com", password: "correct horse battery" }));
@@ -58,7 +71,7 @@ test("signup, login, session, isolation and validation", async () => {
   assert.equal((await state.GET(req("/api/state"))).status, 401);
 
   // drawings: direct upload + raw download, per-user
-  const id = "a".repeat(64), bytes = new TextEncoder().encode("%PDF-1.4 test");
+  const bytes = new TextEncoder().encode("%PDF-1.4 test"), id = createHash("sha256").update(bytes).digest("hex");
   const q = `id=${id}&name=Plate%20Rev%20B.pdf&type=application/pdf&size=${bytes.length}`;
   assert.equal((await drawings.POST(req("/api/drawings?" + q + "&direct=1", { method: "POST", body: bytes, headers: { cookie: a } }))).status, 200);
   assert.equal((await drawings.POST(req("/api/drawings?" + q.replace("application/pdf", "text/html") + "&direct=1", { method: "POST", body: bytes, headers: { cookie: a } }))).status, 415);
@@ -69,4 +82,24 @@ test("signup, login, session, isolation and validation", async () => {
   res = await drawings.GET(req("/api/drawings?raw=1&id=" + id, { headers: { cookie: a } }));
   assert.equal(await res.text(), "%PDF-1.4 test");
   assert.equal((await drawings.GET(req("/api/drawings?id=" + id, { headers: { cookie: b } }))).status, 404);
+
+  // wrong content for the declared type, and a corrupted upload
+  const png = `id=${id}&name=x.png&type=image/png&size=${bytes.length}&direct=1`;
+  assert.equal((await drawings.POST(req("/api/drawings?" + png, { method: "POST", body: bytes, headers: { cookie: a } }))).status, 415);
+  const bad = q.replace(id, "b".repeat(64)) + "&direct=1";
+  assert.equal((await drawings.POST(req("/api/drawings?" + bad, { method: "POST", body: bytes, headers: { cookie: a } }))).status, 400);
+  assert.deepEqual((await (await drawings.GET(req("/api/drawings", { headers: { cookie: a } }))).json()).drawings, [{ id, name: "Plate Rev B.pdf" }]);
+
+  // every change is versioned in the audit log
+  const pg = (await import("pg")).default;
+  const c = new pg.Client({ connectionString: process.env.DATABASE_URL }); await c.connect();
+  const { rows } = await c.query("select action, subject, version, previous_value from audit_events where action like 'entry.%' order by id");
+  await c.end();
+  assert.deepEqual(rows.map((r) => [r.action, r.subject, r.version]), [
+    ["entry.saved", "gaugebook-v1-abc", 1], ["entry.saved", "gaugebook-v1-abc-forms", 1], ["entry.deleted", "gaugebook-v1-abc-forms", 1]]);
+
+  // repeated failed sign-ins are limited
+  for (let i = 0; i < 10; i++) await login.POST(post("/api/auth/login", { email: "bo@example.com", password: "wrong wrong wrong" }));
+  assert.equal((await login.POST(post("/api/auth/login", { email: "bo@example.com", password: "another long password" }))).status, 429);
+  await db.close();
 });

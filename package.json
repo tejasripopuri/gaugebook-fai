@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "node dev-server.mjs",
+    "start": "node server.mjs",
+    "dev": "docker compose -f compose.dev.yaml up -d && DATABASE_URL=postgres://gaugebook:gaugebook@localhost:5433/gaugebook node server.mjs",
     "test": "node --test tests/*.test.mjs"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "dependencies": {
-    "@vercel/blob": "2.9.0"
+    "pg": "8.23.1"
   }
 }
