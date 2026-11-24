@@ -221,7 +221,7 @@ try{
   }
   el("title").textContent=file.name;el("forms").href="forms.html?drawing="+id;
   for(let i=1;i<=doc.count;i++)el("sheet").add(new Option(i,i));
-  plan.pageCount=doc.count;save();await show(1);
+  plan.pageCount=doc.count;save();document.dispatchEvent(new Event("gaugebook:ready"));await show(1);
   if(!practice&&doc.count===1&&plan.scanned[1]&&!plan.imageMatches?.[1]&&!plan.checkedImageLayout){
     const matched=await matchPracticeImage(canvas);
     if(matched){

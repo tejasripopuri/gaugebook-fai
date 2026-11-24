@@ -1,0 +1,417 @@
+file,part,feature,callout,count,view,lower,upper,unit,check
+SMP-2001.pdf,SMP-2001,Overall length,5.000 ±.015,1,Top,4.985,5.015,in,measure
+SMP-2001.pdf,SMP-2001,Overall width,3.500 ±.010,1,Top,3.49,3.51,in,measure
+SMP-2001.pdf,SMP-2001,Mounting hole diameter,4X Ø.343 ±.002 THRU,4,Top,0.341,0.345,in,measure
+SMP-2001.pdf,SMP-2001,Bore diameter,Ø1.250 +.002/-.000 THRU,1,Top,1.25,1.252,in,measure
+SMP-2001.pdf,SMP-2001,Counterbore diameter,CBORE Ø1.625 ±.005,1,Top,1.62,1.63,in,measure
+SMP-2001.pdf,SMP-2001,Counterbore depth,.062 ±.005 DP,1,Top,0.057,0.067,in,measure
+SMP-2001.pdf,SMP-2001,Plate thickness,.250 ±.005,1,Front,0.245,0.255,in,measure
+SMP-2001.pdf,SMP-2001,Flatness,FLATNESS .003,1,Front,,,,verify
+SMP-2001.pdf,SMP-2001,Material,Material: 6061-T651 aluminum,1,,,,,verify
+SMP-2002.pdf,SMP-2002,Flange outside diameter,Ø4.000 ±.010,1,Top,3.99,4.01,in,measure
+SMP-2002.pdf,SMP-2002,Bolt hole diameter,8X Ø.343 ±.005 THRU,8,Top,0.338,0.348,in,measure
+SMP-2002.pdf,SMP-2002,Center bore,Ø1.750 +.003/-.000 THRU,1,Top,1.75,1.753,in,measure
+SMP-2002.pdf,SMP-2002,Flange thickness,.750 ±.005,1,Front,0.745,0.755,in,measure
+SMP-2002.pdf,SMP-2002,Hub height,.600 ±.010,1,Front,0.59,0.61,in,measure
+SMP-2002.pdf,SMP-2002,Hub diameter,Ø2.800 ±.015,1,Front,2.785,2.815,in,measure
+SMP-2002.pdf,SMP-2002,Material,Material: 304 stainless steel,1,,,,,verify
+SMP-2003.pdf,SMP-2003,Base length,100.0 ±0.3,1,Front,99.7,100.3,mm,measure
+SMP-2003.pdf,SMP-2003,Upright height,90.0 ±0.2,1,Front,89.8,90.2,mm,measure
+SMP-2003.pdf,SMP-2003,Base thickness,6.0 ±0.1,1,Front,5.9,6.1,mm,measure
+SMP-2003.pdf,SMP-2003,Upright thickness,6.0 ±0.1,1,Front,5.9,6.1,mm,measure
+SMP-2003.pdf,SMP-2003,Bend angle,90° ±0.5°,1,Front,,,,verify
+SMP-2003.pdf,SMP-2003,Bracket width,60.0 ±0.3,1,Side,59.7,60.3,mm,measure
+SMP-2003.pdf,SMP-2003,Base hole diameter,2X Ø6.6 ±0.1 THRU BASE,2,Top,6.5,6.7,mm,measure
+SMP-2003.pdf,SMP-2003,Upright slot width,SLOT 9.9 ±0.1 WIDE,1,Side,9.8,10.0,mm,measure
+SMP-2003.pdf,SMP-2003,Material,Material: 1018 cold-rolled steel,1,,,,,verify
+SMP-2004.pdf,SMP-2004,Diameter A,Ø1.500 ±.002,1,Side,1.498,1.502,in,measure
+SMP-2004.pdf,SMP-2004,Length A,1.875 ±.010,1,Side,1.865,1.885,in,measure
+SMP-2004.pdf,SMP-2004,Diameter B,Ø1.000 ±.005,1,Side,0.995,1.005,in,measure
+SMP-2004.pdf,SMP-2004,Length B,1.875 ±.005,1,Side,1.87,1.88,in,measure
+SMP-2004.pdf,SMP-2004,Diameter C,Ø.750 ±.002,1,Side,0.748,0.752,in,measure
+SMP-2004.pdf,SMP-2004,Length C,1.875 ±.015,1,Side,1.86,1.89,in,measure
+SMP-2004.pdf,SMP-2004,Diameter D,Ø.500 ±.003,1,Side,0.497,0.503,in,measure
+SMP-2004.pdf,SMP-2004,Overall length,7.500 ±.010,1,Side,7.49,7.51,in,measure
+SMP-2004.pdf,SMP-2004,End chamfers,2X .03 X 45° CHAM,2,Side,,,,verify
+SMP-2004.pdf,SMP-2004,Runout,RUNOUT .002 TO DATUM A,1,Side,,,,verify
+SMP-2004.pdf,SMP-2004,Material,Material: Delrin acetal,1,,,,,verify
+SMP-2005.pdf,SMP-2005,Block length,4.500 ±.005,1,Top,4.495,4.505,in,measure
+SMP-2005.pdf,SMP-2005,Block width,2.700 ±.005,1,Top,2.695,2.705,in,measure
+SMP-2005.pdf,SMP-2005,Slot width,SLOT .375 ±.003 WIDE,1,Top,0.372,0.378,in,measure
+SMP-2005.pdf,SMP-2005,Tapped holes,4X 1/4-20 UNC-2B ▽.50,4,Top,,,,verify
+SMP-2005.pdf,SMP-2005,Pocket depth,POCKET .525 ±.005 DP,1,Top,0.52,0.53,in,measure
+SMP-2005.pdf,SMP-2005,Block height,1.575 ±.005,1,Front,1.57,1.58,in,measure
+SMP-2005.pdf,SMP-2005,Material,Material: 7075-T6 aluminum,1,,,,,verify
+SMP-2006.pdf,SMP-2006,Overall length,150.0 ±0.2,1,Top,149.8,150.2,mm,measure
+SMP-2006.pdf,SMP-2006,Overall width,90.0 ±0.1,1,Top,89.9,90.1,mm,measure
+SMP-2006.pdf,SMP-2006,Mounting hole diameter,2X Ø9.0 ±0.1 THRU,2,Top,8.9,9.1,mm,measure
+SMP-2006.pdf,SMP-2006,Bore diameter,Ø26.00 +0.03/-0.00 THRU,1,Top,26.0,26.03,mm,measure
+SMP-2006.pdf,SMP-2006,Corner radius,4X R5.0 ±0.1,4,Top,4.9,5.1,mm,measure
+SMP-2006.pdf,SMP-2006,Plate thickness,6.0 ±0.1,1,Front,5.9,6.1,mm,measure
+SMP-2006.pdf,SMP-2006,Flatness,FLATNESS 0.05,1,Front,,,,verify
+SMP-2006.pdf,SMP-2006,Material,Material: 6061-T651 aluminum,1,,,,,verify
+SMP-2006.pdf,SMP-2006,Edge chamfer,1.5 X 45° ±1° CHAM,1,Side,,,,verify
+SMP-2006.pdf,SMP-2006,Side hole diameter,Ø4.2 ±0.05 THRU,1,Side,4.15,4.25,mm,measure
+SMP-2007.pdf,SMP-2007,Flange outside diameter,Ø4.000 ±.010,1,Top,3.99,4.01,in,measure
+SMP-2007.pdf,SMP-2007,Bolt hole diameter,4X Ø.343 ±.003 THRU,4,Top,0.34,0.346,in,measure
+SMP-2007.pdf,SMP-2007,Center bore,Ø1.250 +.003/-.000 THRU,1,Top,1.25,1.253,in,measure
+SMP-2007.pdf,SMP-2007,Flange thickness,.750 ±.003,1,Front,0.747,0.753,in,measure
+SMP-2007.pdf,SMP-2007,Hub height,.600 ±.015,1,Front,0.585,0.615,in,measure
+SMP-2007.pdf,SMP-2007,Hub diameter,Ø2.000 ±.015,1,Front,1.985,2.015,in,measure
+SMP-2007.pdf,SMP-2007,Material,Material: 304 stainless steel,1,,,,,verify
+SMP-2008.pdf,SMP-2008,Base length,4.000 ±.015,1,Front,3.985,4.015,in,measure
+SMP-2008.pdf,SMP-2008,Upright height,2.400 ±.005,1,Front,2.395,2.405,in,measure
+SMP-2008.pdf,SMP-2008,Base thickness,.188 ±.003,1,Front,0.185,0.191,in,measure
+SMP-2008.pdf,SMP-2008,Upright thickness,.188 ±.003,1,Front,0.185,0.191,in,measure
+SMP-2008.pdf,SMP-2008,Bend angle,90° ±1°,1,Front,,,,verify
+SMP-2008.pdf,SMP-2008,Bracket width,2.000 ±.005,1,Side,1.995,2.005,in,measure
+SMP-2008.pdf,SMP-2008,Base hole diameter,2X Ø.257 ±.002 THRU BASE,2,Top,0.255,0.259,in,measure
+SMP-2008.pdf,SMP-2008,Upright slot width,SLOT .386 ±.003 WIDE,1,Side,0.383,0.389,in,measure
+SMP-2008.pdf,SMP-2008,Material,Material: 1018 cold-rolled steel,1,,,,,verify
+SMP-2009.pdf,SMP-2009,Diameter A,Ø36.0 ±0.1,1,Side,35.9,36.1,mm,measure
+SMP-2009.pdf,SMP-2009,Length A,47.5 ±0.2,1,Side,47.3,47.7,mm,measure
+SMP-2009.pdf,SMP-2009,Diameter B,Ø32.0 ±0.1,1,Side,31.9,32.1,mm,measure
+SMP-2009.pdf,SMP-2009,Length B,47.5 ±0.3,1,Side,47.2,47.8,mm,measure
+SMP-2009.pdf,SMP-2009,Diameter C,Ø24.0 ±0.1,1,Side,23.9,24.1,mm,measure
+SMP-2009.pdf,SMP-2009,Length C,47.5 ±0.1,1,Side,47.4,47.6,mm,measure
+SMP-2009.pdf,SMP-2009,Diameter D,Ø20.0 ±0.1,1,Side,19.9,20.1,mm,measure
+SMP-2009.pdf,SMP-2009,Overall length,190.0 ±0.2,1,Side,189.8,190.2,mm,measure
+SMP-2009.pdf,SMP-2009,End chamfers,2X 1.0 X 45° CHAM,2,Side,,,,verify
+SMP-2009.pdf,SMP-2009,Runout,RUNOUT 0.05 TO DATUM A,1,Side,,,,verify
+SMP-2009.pdf,SMP-2009,Material,Material: Delrin acetal,1,,,,,verify
+SMP-2010.pdf,SMP-2010,Block length,4.000 ±.015,1,Top,3.985,4.015,in,measure
+SMP-2010.pdf,SMP-2010,Block width,2.000 ±.015,1,Top,1.985,2.015,in,measure
+SMP-2010.pdf,SMP-2010,Slot width,SLOT .500 ±.005 WIDE,1,Top,0.495,0.505,in,measure
+SMP-2010.pdf,SMP-2010,Tapped holes,4X 1/4-20 UNC-2B ▽.50,4,Top,,,,verify
+SMP-2010.pdf,SMP-2010,Pocket depth,POCKET .467 ±.003 DP,1,Top,0.464,0.47,in,measure
+SMP-2010.pdf,SMP-2010,Block height,1.400 ±.015,1,Front,1.385,1.415,in,measure
+SMP-2010.pdf,SMP-2010,Material,Material: 7075-T6 aluminum,1,,,,,verify
+SMP-2011.pdf,SMP-2011,Overall length,4.000 ±.010,1,Top,3.99,4.01,in,measure
+SMP-2011.pdf,SMP-2011,Overall width,3.000 ±.005,1,Top,2.995,3.005,in,measure
+SMP-2011.pdf,SMP-2011,Mounting hole diameter,6X Ø.281 ±.005 THRU,6,Top,0.276,0.286,in,measure
+SMP-2011.pdf,SMP-2011,Plate thickness,.375 ±.003,1,Front,0.372,0.378,in,measure
+SMP-2011.pdf,SMP-2011,Flatness,FLATNESS .003,1,Front,,,,verify
+SMP-2011.pdf,SMP-2011,Material,Material: 6061-T651 aluminum,1,,,,,verify
+SMP-2012.pdf,SMP-2012,Flange outside diameter,Ø140.0 ±0.3,1,Top,139.7,140.3,mm,measure
+SMP-2012.pdf,SMP-2012,Bolt hole diameter,6X Ø11.0 ±0.1 THRU,6,Top,10.9,11.1,mm,measure
+SMP-2012.pdf,SMP-2012,Center bore,Ø50.00 +0.05/-0.00 THRU,1,Top,50.0,50.05,mm,measure
+SMP-2012.pdf,SMP-2012,Flange thickness,15.0 ±0.1,1,Front,14.9,15.1,mm,measure
+SMP-2012.pdf,SMP-2012,Hub height,12.0 ±0.2,1,Front,11.8,12.2,mm,measure
+SMP-2012.pdf,SMP-2012,Hub diameter,Ø80.0 ±0.2,1,Front,79.8,80.2,mm,measure
+SMP-2012.pdf,SMP-2012,Material,Material: 304 stainless steel,1,,,,,verify
+SMP-2012.pdf,SMP-2012,Edge chamfer,1.5 X 45° ±1° CHAM,1,Side,,,,verify
+SMP-2012.pdf,SMP-2012,Side hole diameter,Ø4.2 ±0.05 THRU,1,Side,4.15,4.25,mm,measure
+SMP-2013.pdf,SMP-2013,Base length,4.000 ±.015,1,Front,3.985,4.015,in,measure
+SMP-2013.pdf,SMP-2013,Upright height,3.600 ±.010,1,Front,3.59,3.61,in,measure
+SMP-2013.pdf,SMP-2013,Base thickness,.313 ±.005,1,Front,0.308,0.318,in,measure
+SMP-2013.pdf,SMP-2013,Upright thickness,.313 ±.005,1,Front,0.308,0.318,in,measure
+SMP-2013.pdf,SMP-2013,Bend angle,90° ±1°,1,Front,,,,verify
+SMP-2013.pdf,SMP-2013,Bracket width,1.500 ±.010,1,Side,1.49,1.51,in,measure
+SMP-2013.pdf,SMP-2013,Base hole diameter,2X Ø.257 ±.005 THRU BASE,2,Top,0.252,0.262,in,measure
+SMP-2013.pdf,SMP-2013,Upright slot width,SLOT .386 ±.003 WIDE,1,Side,0.383,0.389,in,measure
+SMP-2013.pdf,SMP-2013,Material,Material: 1018 cold-rolled steel,1,,,,,verify
+SMP-2014.pdf,SMP-2014,Diameter A,Ø1.375 ±.002,1,Side,1.373,1.377,in,measure
+SMP-2014.pdf,SMP-2014,Length A,2.500 ±.015,1,Side,2.485,2.515,in,measure
+SMP-2014.pdf,SMP-2014,Diameter B,Ø1.000 ±.005,1,Side,0.995,1.005,in,measure
+SMP-2014.pdf,SMP-2014,Length B,2.500 ±.005,1,Side,2.495,2.505,in,measure
+SMP-2014.pdf,SMP-2014,Diameter C,Ø.500 ±.002,1,Side,0.498,0.502,in,measure
+SMP-2014.pdf,SMP-2014,Overall length,7.500 ±.010,1,Side,7.49,7.51,in,measure
+SMP-2014.pdf,SMP-2014,End chamfers,2X .03 X 45° CHAM,2,Side,,,,verify
+SMP-2014.pdf,SMP-2014,Runout,RUNOUT .002 TO DATUM A,1,Side,,,,verify
+SMP-2014.pdf,SMP-2014,Material,Material: Delrin acetal,1,,,,,verify
+SMP-2015.pdf,SMP-2015,Block length,100.0 ±0.3,1,Top,99.7,100.3,mm,measure
+SMP-2015.pdf,SMP-2015,Block width,70.0 ±0.1,1,Top,69.9,70.1,mm,measure
+SMP-2015.pdf,SMP-2015,Slot width,SLOT 12.0 ±0.1 WIDE,1,Top,11.9,12.1,mm,measure
+SMP-2015.pdf,SMP-2015,Tapped holes,4X M6x1.0-6H ▽12,4,Top,,,,verify
+SMP-2015.pdf,SMP-2015,Pocket depth,POCKET 11.7 ±0.1 DP,1,Top,11.6,11.8,mm,measure
+SMP-2015.pdf,SMP-2015,Block height,35.0 ±0.2,1,Front,34.8,35.2,mm,measure
+SMP-2015.pdf,SMP-2015,Material,Material: 7075-T6 aluminum,1,,,,,verify
+SMP-2016.pdf,SMP-2016,Overall length,6.500 ±.005,1,Top,6.495,6.505,in,measure
+SMP-2016.pdf,SMP-2016,Overall width,2.500 ±.015,1,Top,2.485,2.515,in,measure
+SMP-2016.pdf,SMP-2016,Mounting hole diameter,6X Ø.201 ±.002 THRU,6,Top,0.199,0.203,in,measure
+SMP-2016.pdf,SMP-2016,Bore diameter,Ø.750 +.002/-.000 THRU,1,Top,0.75,0.752,in,measure
+SMP-2016.pdf,SMP-2016,Plate thickness,.500 ±.005,1,Front,0.495,0.505,in,measure
+SMP-2016.pdf,SMP-2016,Flatness,FLATNESS .003,1,Front,,,,verify
+SMP-2016.pdf,SMP-2016,Material,Material: 6061-T651 aluminum,1,,,,,verify
+SMP-2017.pdf,SMP-2017,Flange outside diameter,Ø5.500 ±.005,1,Top,5.495,5.505,in,measure
+SMP-2017.pdf,SMP-2017,Bolt hole diameter,8X Ø.281 ±.005 THRU,8,Top,0.276,0.286,in,measure
+SMP-2017.pdf,SMP-2017,Center bore,Ø1.250 +.003/-.000 THRU,1,Top,1.25,1.253,in,measure
+SMP-2017.pdf,SMP-2017,Flange thickness,.500 ±.005,1,Front,0.495,0.505,in,measure
+SMP-2017.pdf,SMP-2017,Hub height,.400 ±.010,1,Front,0.39,0.41,in,measure
+SMP-2017.pdf,SMP-2017,Hub diameter,Ø2.000 ±.015,1,Front,1.985,2.015,in,measure
+SMP-2017.pdf,SMP-2017,Material,Material: 304 stainless steel,1,,,,,verify
+SMP-2018.pdf,SMP-2018,Base length,120.0 ±0.2,1,Front,119.8,120.2,mm,measure
+SMP-2018.pdf,SMP-2018,Upright height,108.0 ±0.3,1,Front,107.7,108.3,mm,measure
+SMP-2018.pdf,SMP-2018,Base thickness,5.0 ±0.1,1,Front,4.9,5.1,mm,measure
+SMP-2018.pdf,SMP-2018,Upright thickness,5.0 ±0.1,1,Front,4.9,5.1,mm,measure
+SMP-2018.pdf,SMP-2018,Bend angle,90° ±1°,1,Front,,,,verify
+SMP-2018.pdf,SMP-2018,Bracket width,50.0 ±0.2,1,Side,49.8,50.2,mm,measure
+SMP-2018.pdf,SMP-2018,Base hole diameter,2X Ø6.6 ±0.1 THRU BASE,2,Top,6.5,6.7,mm,measure
+SMP-2018.pdf,SMP-2018,Upright slot width,SLOT 9.9 ±0.1 WIDE,1,Side,9.8,10.0,mm,measure
+SMP-2018.pdf,SMP-2018,Material,Material: 1018 cold-rolled steel,1,,,,,verify
+SMP-2018.pdf,SMP-2018,Edge chamfer,1.5 X 45° ±1° CHAM,1,Side,,,,verify
+SMP-2018.pdf,SMP-2018,Side hole diameter,Ø4.2 ±0.05 THRU,1,Side,4.15,4.25,mm,measure
+SMP-2019.pdf,SMP-2019,Diameter A,Ø1.500 ±.003,1,Side,1.497,1.503,in,measure
+SMP-2019.pdf,SMP-2019,Length A,2.167 ±.015,1,Side,2.152,2.182,in,measure
+SMP-2019.pdf,SMP-2019,Diameter B,Ø1.375 ±.005,1,Side,1.37,1.38,in,measure
+SMP-2019.pdf,SMP-2019,Length B,2.167 ±.010,1,Side,2.157,2.177,in,measure
+SMP-2019.pdf,SMP-2019,Diameter C,Ø1.250 ±.003,1,Side,1.247,1.253,in,measure
+SMP-2019.pdf,SMP-2019,Overall length,6.500 ±.010,1,Side,6.49,6.51,in,measure
+SMP-2019.pdf,SMP-2019,End chamfers,2X .03 X 45° CHAM,2,Side,,,,verify
+SMP-2019.pdf,SMP-2019,Keyway width,KEYWAY .188 +.002/-.000 WIDE,1,Side,0.188,0.19,in,measure
+SMP-2019.pdf,SMP-2019,Runout,RUNOUT .002 TO DATUM A,1,Side,,,,verify
+SMP-2019.pdf,SMP-2019,Material,Material: Delrin acetal,1,,,,,verify
+SMP-2020.pdf,SMP-2020,Block length,4.500 ±.010,1,Top,4.49,4.51,in,measure
+SMP-2020.pdf,SMP-2020,Block width,2.250 ±.010,1,Top,2.24,2.26,in,measure
+SMP-2020.pdf,SMP-2020,Slot width,SLOT .375 ±.005 WIDE,1,Top,0.37,0.38,in,measure
+SMP-2020.pdf,SMP-2020,Tapped holes,4X 1/4-20 UNC-2B ▽.50,4,Top,,,,verify
+SMP-2020.pdf,SMP-2020,Pocket depth,POCKET .375 ±.003 DP,1,Top,0.372,0.378,in,measure
+SMP-2020.pdf,SMP-2020,Block height,1.125 ±.015,1,Front,1.11,1.14,in,measure
+SMP-2020.pdf,SMP-2020,Material,Material: 7075-T6 aluminum,1,,,,,verify
+SMP-2021.pdf,SMP-2021,Overall length,180.0 ±0.3,1,Top,179.7,180.3,mm,measure
+SMP-2021.pdf,SMP-2021,Overall width,80.0 ±0.2,1,Top,79.8,80.2,mm,measure
+SMP-2021.pdf,SMP-2021,Mounting hole diameter,4X Ø6.6 ±0.1 THRU,4,Top,6.5,6.7,mm,measure
+SMP-2021.pdf,SMP-2021,Plate thickness,6.0 ±0.1,1,Front,5.9,6.1,mm,measure
+SMP-2021.pdf,SMP-2021,Flatness,FLATNESS 0.05,1,Front,,,,verify
+SMP-2021.pdf,SMP-2021,Material,Material: 6061-T651 aluminum,1,,,,,verify
+SMP-2022.pdf,SMP-2022,Flange outside diameter,Ø4.000 ±.005,1,Top,3.995,4.005,in,measure
+SMP-2022.pdf,SMP-2022,Bolt hole diameter,6X Ø.406 ±.002 THRU,6,Top,0.404,0.408,in,measure
+SMP-2022.pdf,SMP-2022,Center bore,Ø1.750 +.003/-.000 THRU,1,Top,1.75,1.753,in,measure
+SMP-2022.pdf,SMP-2022,Flange thickness,.750 ±.003,1,Front,0.747,0.753,in,measure
+SMP-2022.pdf,SMP-2022,Hub height,.600 ±.015,1,Front,0.585,0.615,in,measure
+SMP-2022.pdf,SMP-2022,Hub diameter,Ø2.800 ±.015,1,Front,2.785,2.815,in,measure
+SMP-2022.pdf,SMP-2022,Material,Material: 304 stainless steel,1,,,,,verify
+SMP-2023.pdf,SMP-2023,Base length,3.500 ±.005,1,Front,3.495,3.505,in,measure
+SMP-2023.pdf,SMP-2023,Upright height,2.625 ±.010,1,Front,2.615,2.635,in,measure
+SMP-2023.pdf,SMP-2023,Base thickness,.250 ±.003,1,Front,0.247,0.253,in,measure
+SMP-2023.pdf,SMP-2023,Upright thickness,.250 ±.005,1,Front,0.245,0.255,in,measure
+SMP-2023.pdf,SMP-2023,Bend angle,90° ±0.5°,1,Front,,,,verify
+SMP-2023.pdf,SMP-2023,Bracket width,2.000 ±.015,1,Side,1.985,2.015,in,measure
+SMP-2023.pdf,SMP-2023,Base hole diameter,2X Ø.257 ±.002 THRU BASE,2,Top,0.255,0.259,in,measure
+SMP-2023.pdf,SMP-2023,Upright slot width,SLOT .386 ±.003 WIDE,1,Side,0.383,0.389,in,measure
+SMP-2023.pdf,SMP-2023,Material,Material: 1018 cold-rolled steel,1,,,,,verify
+SMP-2024.pdf,SMP-2024,Diameter A,Ø36.0 ±0.1,1,Side,35.9,36.1,mm,measure
+SMP-2024.pdf,SMP-2024,Length A,32.5 ±0.3,1,Side,32.2,32.8,mm,measure
+SMP-2024.pdf,SMP-2024,Diameter B,Ø32.0 ±0.1,1,Side,31.9,32.1,mm,measure
+SMP-2024.pdf,SMP-2024,Length B,32.5 ±0.1,1,Side,32.4,32.6,mm,measure
+SMP-2024.pdf,SMP-2024,Diameter C,Ø24.0 ±0.1,1,Side,23.9,24.1,mm,measure
+SMP-2024.pdf,SMP-2024,Length C,32.5 ±0.3,1,Side,32.2,32.8,mm,measure
+SMP-2024.pdf,SMP-2024,Diameter D,Ø12.0 ±0.1,1,Side,11.9,12.1,mm,measure
+SMP-2024.pdf,SMP-2024,Overall length,130.0 ±0.3,1,Side,129.7,130.3,mm,measure
+SMP-2024.pdf,SMP-2024,End chamfers,2X 1.0 X 45° CHAM,2,Side,,,,verify
+SMP-2024.pdf,SMP-2024,Runout,RUNOUT 0.05 TO DATUM A,1,Side,,,,verify
+SMP-2024.pdf,SMP-2024,Material,Material: Delrin acetal,1,,,,,verify
+SMP-2024.pdf,SMP-2024,Edge chamfer,1.5 X 45° ±1° CHAM,1,Side,,,,verify
+SMP-2024.pdf,SMP-2024,Side hole diameter,Ø4.2 ±0.05 THRU,1,Side,4.15,4.25,mm,measure
+SMP-2025.pdf,SMP-2025,Block length,3.000 ±.005,1,Top,2.995,3.005,in,measure
+SMP-2025.pdf,SMP-2025,Block width,2.100 ±.010,1,Top,2.09,2.11,in,measure
+SMP-2025.pdf,SMP-2025,Slot width,SLOT .375 ±.005 WIDE,1,Top,0.37,0.38,in,measure
+SMP-2025.pdf,SMP-2025,Tapped holes,4X 1/4-20 UNC-2B ▽.50,4,Top,,,,verify
+SMP-2025.pdf,SMP-2025,Pocket depth,POCKET .250 ±.005 DP,1,Top,0.245,0.255,in,measure
+SMP-2025.pdf,SMP-2025,Block height,.750 ±.005,1,Front,0.745,0.755,in,measure
+SMP-2025.pdf,SMP-2025,Material,Material: 7075-T6 aluminum,1,,,,,verify
+SMP-2026.pdf,SMP-2026,Overall length,4.500 ±.005,1,Top,4.495,4.505,in,measure
+SMP-2026.pdf,SMP-2026,Overall width,2.500 ±.010,1,Top,2.49,2.51,in,measure
+SMP-2026.pdf,SMP-2026,Mounting hole diameter,6X Ø.343 ±.002 THRU,6,Top,0.341,0.345,in,measure
+SMP-2026.pdf,SMP-2026,Bore diameter,Ø.750 +.002/-.000 THRU,1,Top,0.75,0.752,in,measure
+SMP-2026.pdf,SMP-2026,Counterbore diameter,CBORE Ø1.125 ±.005,1,Top,1.12,1.13,in,measure
+SMP-2026.pdf,SMP-2026,Counterbore depth,.094 ±.005 DP,1,Top,0.089,0.099,in,measure
+SMP-2026.pdf,SMP-2026,Plate thickness,.375 ±.003,1,Front,0.372,0.378,in,measure
+SMP-2026.pdf,SMP-2026,Flatness,FLATNESS .003,1,Front,,,,verify
+SMP-2026.pdf,SMP-2026,Material,Material: 6061-T651 aluminum,1,,,,,verify
+SMP-2027.pdf,SMP-2027,Flange outside diameter,Ø120.0 ±0.2,1,Top,119.8,120.2,mm,measure
+SMP-2027.pdf,SMP-2027,Bolt hole diameter,8X Ø6.6 ±0.1 THRU,8,Top,6.5,6.7,mm,measure
+SMP-2027.pdf,SMP-2027,Center bore,Ø40.00 +0.05/-0.00 THRU,1,Top,40.0,40.05,mm,measure
+SMP-2027.pdf,SMP-2027,Flange thickness,20.0 ±0.1,1,Front,19.9,20.1,mm,measure
+SMP-2027.pdf,SMP-2027,Hub height,16.0 ±0.3,1,Front,15.7,16.3,mm,measure
+SMP-2027.pdf,SMP-2027,Hub diameter,Ø64.0 ±0.3,1,Front,63.7,64.3,mm,measure
+SMP-2027.pdf,SMP-2027,Material,Material: 304 stainless steel,1,,,,,verify
+SMP-2028.pdf,SMP-2028,Base length,4.000 ±.005,1,Front,3.995,4.005,in,measure
+SMP-2028.pdf,SMP-2028,Upright height,3.600 ±.010,1,Front,3.59,3.61,in,measure
+SMP-2028.pdf,SMP-2028,Base thickness,.250 ±.005,1,Front,0.245,0.255,in,measure
+SMP-2028.pdf,SMP-2028,Upright thickness,.250 ±.003,1,Front,0.247,0.253,in,measure
+SMP-2028.pdf,SMP-2028,Bend angle,90° ±0.5°,1,Front,,,,verify
+SMP-2028.pdf,SMP-2028,Bracket width,1.500 ±.015,1,Side,1.485,1.515,in,measure
+SMP-2028.pdf,SMP-2028,Base hole diameter,2X Ø.281 ±.005 THRU BASE,2,Top,0.276,0.286,in,measure
+SMP-2028.pdf,SMP-2028,Upright slot width,SLOT .422 ±.003 WIDE,1,Side,0.419,0.425,in,measure
+SMP-2028.pdf,SMP-2028,Material,Material: 1018 cold-rolled steel,1,,,,,verify
+SMP-2029.pdf,SMP-2029,Diameter A,Ø1.125 ±.005,1,Side,1.12,1.13,in,measure
+SMP-2029.pdf,SMP-2029,Length A,2.333 ±.015,1,Side,2.318,2.348,in,measure
+SMP-2029.pdf,SMP-2029,Diameter B,Ø1.000 ±.005,1,Side,0.995,1.005,in,measure
+SMP-2029.pdf,SMP-2029,Length B,2.333 ±.015,1,Side,2.318,2.348,in,measure
+SMP-2029.pdf,SMP-2029,Diameter C,Ø.500 ±.005,1,Side,0.495,0.505,in,measure
+SMP-2029.pdf,SMP-2029,Overall length,7.000 ±.010,1,Side,6.99,7.01,in,measure
+SMP-2029.pdf,SMP-2029,End chamfers,2X .03 X 45° CHAM,2,Side,,,,verify
+SMP-2029.pdf,SMP-2029,Runout,RUNOUT .002 TO DATUM A,1,Side,,,,verify
+SMP-2029.pdf,SMP-2029,Material,Material: Delrin acetal,1,,,,,verify
+SMP-2030.pdf,SMP-2030,Block length,110.0 ±0.2,1,Top,109.8,110.2,mm,measure
+SMP-2030.pdf,SMP-2030,Block width,77.0 ±0.3,1,Top,76.7,77.3,mm,measure
+SMP-2030.pdf,SMP-2030,Slot width,SLOT 10.0 ±0.1 WIDE,1,Top,9.9,10.1,mm,measure
+SMP-2030.pdf,SMP-2030,Tapped holes,4X M6x1.0-6H ▽12,4,Top,,,,verify
+SMP-2030.pdf,SMP-2030,Pocket depth,POCKET 12.8 ±0.1 DP,1,Top,12.7,12.9,mm,measure
+SMP-2030.pdf,SMP-2030,Block height,38.5 ±0.1,1,Front,38.4,38.6,mm,measure
+SMP-2030.pdf,SMP-2030,Material,Material: 7075-T6 aluminum,1,,,,,verify
+SMP-2030.pdf,SMP-2030,Edge chamfer,1.5 X 45° ±1° CHAM,1,Side,,,,verify
+SMP-2030.pdf,SMP-2030,Side hole diameter,Ø4.2 ±0.05 THRU,1,Side,4.15,4.25,mm,measure
+SMP-2031.png,SMP-2031,Overall length,5.000 ±.010,1,Top,4.99,5.01,in,measure
+SMP-2031.png,SMP-2031,Overall width,4.000 ±.005,1,Top,3.995,4.005,in,measure
+SMP-2031.png,SMP-2031,Mounting hole diameter,4X Ø.201 ±.002 THRU,4,Top,0.199,0.203,in,measure
+SMP-2031.png,SMP-2031,Corner radius,4X R.250 ±.005,4,Top,0.245,0.255,in,measure
+SMP-2031.png,SMP-2031,Plate thickness,.500 ±.003,1,Front,0.497,0.503,in,measure
+SMP-2031.png,SMP-2031,Flatness,FLATNESS .003,1,Front,,,,verify
+SMP-2031.png,SMP-2031,Material,Material: 6061-T651 aluminum,1,,,,,verify
+SMP-2032.png,SMP-2032,Flange outside diameter,Ø5.000 ±.015,1,Top,4.985,5.015,in,measure
+SMP-2032.png,SMP-2032,Bolt hole diameter,4X Ø.343 ±.002 THRU,4,Top,0.341,0.345,in,measure
+SMP-2032.png,SMP-2032,Center bore,Ø1.250 +.003/-.000 THRU,1,Top,1.25,1.253,in,measure
+SMP-2032.png,SMP-2032,Flange thickness,.500 ±.005,1,Front,0.495,0.505,in,measure
+SMP-2032.png,SMP-2032,Hub height,.400 ±.015,1,Front,0.385,0.415,in,measure
+SMP-2032.png,SMP-2032,Hub diameter,Ø2.000 ±.010,1,Front,1.99,2.01,in,measure
+SMP-2032.png,SMP-2032,Material,Material: 304 stainless steel,1,,,,,verify
+SMP-2033.png,SMP-2033,Base length,110.0 ±0.2,1,Front,109.8,110.2,mm,measure
+SMP-2033.png,SMP-2033,Upright height,66.0 ±0.3,1,Front,65.7,66.3,mm,measure
+SMP-2033.png,SMP-2033,Base thickness,8.0 ±0.1,1,Front,7.9,8.1,mm,measure
+SMP-2033.png,SMP-2033,Upright thickness,8.0 ±0.1,1,Front,7.9,8.1,mm,measure
+SMP-2033.png,SMP-2033,Bend angle,90° ±1°,1,Front,,,,verify
+SMP-2033.png,SMP-2033,Bracket width,55.0 ±0.2,1,Side,54.8,55.2,mm,measure
+SMP-2033.png,SMP-2033,Base hole diameter,2X Ø6.6 ±0.1 THRU BASE,2,Top,6.5,6.7,mm,measure
+SMP-2033.png,SMP-2033,Upright slot width,SLOT 9.9 ±0.1 WIDE,1,Side,9.8,10.0,mm,measure
+SMP-2033.png,SMP-2033,Material,Material: 1018 cold-rolled steel,1,,,,,verify
+SMP-2034.png,SMP-2034,Diameter A,Ø1.250 ±.003,1,Side,1.247,1.253,in,measure
+SMP-2034.png,SMP-2034,Length A,1.833 ±.010,1,Side,1.823,1.843,in,measure
+SMP-2034.png,SMP-2034,Diameter B,Ø1.000 ±.003,1,Side,0.997,1.003,in,measure
+SMP-2034.png,SMP-2034,Length B,1.833 ±.005,1,Side,1.828,1.838,in,measure
+SMP-2034.png,SMP-2034,Diameter C,Ø.625 ±.005,1,Side,0.62,0.63,in,measure
+SMP-2034.png,SMP-2034,Overall length,5.500 ±.005,1,Side,5.495,5.505,in,measure
+SMP-2034.png,SMP-2034,End chamfers,2X .03 X 45° CHAM,2,Side,,,,verify
+SMP-2034.png,SMP-2034,Runout,RUNOUT .002 TO DATUM A,1,Side,,,,verify
+SMP-2034.png,SMP-2034,Material,Material: Delrin acetal,1,,,,,verify
+SMP-2035.png,SMP-2035,Block length,3.500 ±.015,1,Top,3.485,3.515,in,measure
+SMP-2035.png,SMP-2035,Block width,1.750 ±.010,1,Top,1.74,1.76,in,measure
+SMP-2035.png,SMP-2035,Slot width,SLOT .375 ±.003 WIDE,1,Top,0.372,0.378,in,measure
+SMP-2035.png,SMP-2035,Tapped holes,4X 1/4-20 UNC-2B ▽.50,4,Top,,,,verify
+SMP-2035.png,SMP-2035,Pocket depth,POCKET .408 ±.003 DP,1,Top,0.405,0.411,in,measure
+SMP-2035.png,SMP-2035,Block height,1.225 ±.005,1,Front,1.22,1.23,in,measure
+SMP-2035.png,SMP-2035,Material,Material: 7075-T6 aluminum,1,,,,,verify
+SMP-2036.png,SMP-2036,Overall length,140.0 ±0.2,1,Top,139.8,140.2,mm,measure
+SMP-2036.png,SMP-2036,Overall width,100.0 ±0.1,1,Top,99.9,100.1,mm,measure
+SMP-2036.png,SMP-2036,Mounting hole diameter,4X Ø11.0 ±0.1 THRU,4,Top,10.9,11.1,mm,measure
+SMP-2036.png,SMP-2036,Bore diameter,Ø40.00 +0.03/-0.00 THRU,1,Top,40.0,40.03,mm,measure
+SMP-2036.png,SMP-2036,Counterbore diameter,CBORE Ø50.0 ±0.1,1,Top,49.9,50.1,mm,measure
+SMP-2036.png,SMP-2036,Counterbore depth,2.0 ±0.1 DP,1,Top,1.9,2.1,mm,measure
+SMP-2036.png,SMP-2036,Plate thickness,8.0 ±0.1,1,Front,7.9,8.1,mm,measure
+SMP-2036.png,SMP-2036,Flatness,FLATNESS 0.05,1,Front,,,,verify
+SMP-2036.png,SMP-2036,Material,Material: 6061-T651 aluminum,1,,,,,verify
+SMP-2037.png,SMP-2037,Flange outside diameter,Ø6.000 ±.010,1,Top,5.99,6.01,in,measure
+SMP-2037.png,SMP-2037,Bolt hole diameter,8X Ø.343 ±.003 THRU,8,Top,0.34,0.346,in,measure
+SMP-2037.png,SMP-2037,Center bore,Ø1.250 +.003/-.000 THRU,1,Top,1.25,1.253,in,measure
+SMP-2037.png,SMP-2037,Flange thickness,.625 ±.003,1,Front,0.622,0.628,in,measure
+SMP-2037.png,SMP-2037,Hub height,.500 ±.015,1,Front,0.485,0.515,in,measure
+SMP-2037.png,SMP-2037,Hub diameter,Ø2.000 ±.015,1,Front,1.985,2.015,in,measure
+SMP-2037.png,SMP-2037,Material,Material: 304 stainless steel,1,,,,,verify
+SMP-2038.png,SMP-2038,Base length,5.000 ±.010,1,Front,4.99,5.01,in,measure
+SMP-2038.png,SMP-2038,Upright height,4.500 ±.010,1,Front,4.49,4.51,in,measure
+SMP-2038.png,SMP-2038,Base thickness,.250 ±.003,1,Front,0.247,0.253,in,measure
+SMP-2038.png,SMP-2038,Upright thickness,.250 ±.003,1,Front,0.247,0.253,in,measure
+SMP-2038.png,SMP-2038,Bend angle,90° ±1°,1,Front,,,,verify
+SMP-2038.png,SMP-2038,Bracket width,1.500 ±.010,1,Side,1.49,1.51,in,measure
+SMP-2038.png,SMP-2038,Base hole diameter,2X Ø.281 ±.005 THRU BASE,2,Top,0.276,0.286,in,measure
+SMP-2038.png,SMP-2038,Upright slot width,SLOT .422 ±.003 WIDE,1,Side,0.419,0.425,in,measure
+SMP-2038.png,SMP-2038,Material,Material: 1018 cold-rolled steel,1,,,,,verify
+SMP-2039.png,SMP-2039,Diameter A,Ø28.0 ±0.1,1,Side,27.9,28.1,mm,measure
+SMP-2039.png,SMP-2039,Length A,70.0 ±0.2,1,Side,69.8,70.2,mm,measure
+SMP-2039.png,SMP-2039,Diameter B,Ø24.0 ±0.1,1,Side,23.9,24.1,mm,measure
+SMP-2039.png,SMP-2039,Overall length,140.0 ±0.3,1,Side,139.7,140.3,mm,measure
+SMP-2039.png,SMP-2039,End chamfers,2X 1.0 X 45° CHAM,2,Side,,,,verify
+SMP-2039.png,SMP-2039,Keyway width,KEYWAY 5.00 +0.03/-0.00 WIDE,1,Side,5.0,5.03,mm,measure
+SMP-2039.png,SMP-2039,Runout,RUNOUT 0.05 TO DATUM A,1,Side,,,,verify
+SMP-2039.png,SMP-2039,Material,Material: Delrin acetal,1,,,,,verify
+SMP-2040.png,SMP-2040,Block length,3.500 ±.010,1,Top,3.49,3.51,in,measure
+SMP-2040.png,SMP-2040,Block width,2.100 ±.015,1,Top,2.085,2.115,in,measure
+SMP-2040.png,SMP-2040,Slot width,SLOT .500 ±.003 WIDE,1,Top,0.497,0.503,in,measure
+SMP-2040.png,SMP-2040,Tapped holes,4X 1/4-20 UNC-2B ▽.50,4,Top,,,,verify
+SMP-2040.png,SMP-2040,Pocket depth,POCKET .408 ±.003 DP,1,Top,0.405,0.411,in,measure
+SMP-2040.png,SMP-2040,Block height,1.225 ±.010,1,Front,1.215,1.235,in,measure
+SMP-2040.png,SMP-2040,Material,Material: 7075-T6 aluminum,1,,,,,verify
+SMP-2041.png,SMP-2041,Overall length,5.000 ±.005,1,Top,4.995,5.005,in,measure
+SMP-2041.png,SMP-2041,Overall width,2.500 ±.005,1,Top,2.495,2.505,in,measure
+SMP-2041.png,SMP-2041,Mounting hole diameter,4X Ø.343 ±.003 THRU,4,Top,0.34,0.346,in,measure
+SMP-2041.png,SMP-2041,Bore diameter,Ø.750 +.002/-.000 THRU,1,Top,0.75,0.752,in,measure
+SMP-2041.png,SMP-2041,Counterbore diameter,CBORE Ø1.125 ±.003,1,Top,1.122,1.128,in,measure
+SMP-2041.png,SMP-2041,Counterbore depth,.156 ±.005 DP,1,Top,0.151,0.161,in,measure
+SMP-2041.png,SMP-2041,Corner radius,4X R.250 ±.005,4,Top,0.245,0.255,in,measure
+SMP-2041.png,SMP-2041,Plate thickness,.625 ±.005,1,Front,0.62,0.63,in,measure
+SMP-2041.png,SMP-2041,Material,Material: 6061-T651 aluminum,1,,,,,verify
+SMP-2042.png,SMP-2042,Flange outside diameter,Ø160.0 ±0.1,1,Top,159.9,160.1,mm,measure
+SMP-2042.png,SMP-2042,Bolt hole diameter,6X Ø11.0 ±0.1 THRU,6,Top,10.9,11.1,mm,measure
+SMP-2042.png,SMP-2042,Center bore,Ø30.00 +0.05/-0.00 THRU,1,Top,30.0,30.05,mm,measure
+SMP-2042.png,SMP-2042,Flange thickness,15.0 ±0.1,1,Front,14.9,15.1,mm,measure
+SMP-2042.png,SMP-2042,Hub height,12.0 ±0.1,1,Front,11.9,12.1,mm,measure
+SMP-2042.png,SMP-2042,Hub diameter,Ø48.0 ±0.1,1,Front,47.9,48.1,mm,measure
+SMP-2042.png,SMP-2042,Material,Material: 304 stainless steel,1,,,,,verify
+SMP-2043.png,SMP-2043,Base length,4.000 ±.015,1,Front,3.985,4.015,in,measure
+SMP-2043.png,SMP-2043,Upright height,3.000 ±.015,1,Front,2.985,3.015,in,measure
+SMP-2043.png,SMP-2043,Base thickness,.250 ±.005,1,Front,0.245,0.255,in,measure
+SMP-2043.png,SMP-2043,Upright thickness,.250 ±.005,1,Front,0.245,0.255,in,measure
+SMP-2043.png,SMP-2043,Bend angle,90° ±0.5°,1,Front,,,,verify
+SMP-2043.png,SMP-2043,Bracket width,1.500 ±.010,1,Side,1.49,1.51,in,measure
+SMP-2043.png,SMP-2043,Base hole diameter,2X Ø.257 ±.002 THRU BASE,2,Top,0.255,0.259,in,measure
+SMP-2043.png,SMP-2043,Upright slot width,SLOT .386 ±.003 WIDE,1,Side,0.383,0.389,in,measure
+SMP-2043.png,SMP-2043,Material,Material: 1018 cold-rolled steel,1,,,,,verify
+SMP-2044.png,SMP-2044,Diameter A,Ø1.500 ±.005,1,Side,1.495,1.505,in,measure
+SMP-2044.png,SMP-2044,Length A,2.500 ±.015,1,Side,2.485,2.515,in,measure
+SMP-2044.png,SMP-2044,Diameter B,Ø1.250 ±.002,1,Side,1.248,1.252,in,measure
+SMP-2044.png,SMP-2044,Length B,2.500 ±.015,1,Side,2.485,2.515,in,measure
+SMP-2044.png,SMP-2044,Diameter C,Ø1.000 ±.002,1,Side,0.998,1.002,in,measure
+SMP-2044.png,SMP-2044,Overall length,7.500 ±.015,1,Side,7.485,7.515,in,measure
+SMP-2044.png,SMP-2044,End chamfers,2X .03 X 45° CHAM,2,Side,,,,verify
+SMP-2044.png,SMP-2044,Runout,RUNOUT .002 TO DATUM A,1,Side,,,,verify
+SMP-2044.png,SMP-2044,Material,Material: Delrin acetal,1,,,,,verify
+SMP-2045.png,SMP-2045,Block length,120.0 ±0.1,1,Top,119.9,120.1,mm,measure
+SMP-2045.png,SMP-2045,Block width,72.0 ±0.3,1,Top,71.7,72.3,mm,measure
+SMP-2045.png,SMP-2045,Slot width,SLOT 10.0 ±0.1 WIDE,1,Top,9.9,10.1,mm,measure
+SMP-2045.png,SMP-2045,Tapped holes,4X M6x1.0-6H ▽12,4,Top,,,,verify
+SMP-2045.png,SMP-2045,Pocket depth,POCKET 10.0 ±0.1 DP,1,Top,9.9,10.1,mm,measure
+SMP-2045.png,SMP-2045,Block height,30.0 ±0.1,1,Front,29.9,30.1,mm,measure
+SMP-2045.png,SMP-2045,Material,Material: 7075-T6 aluminum,1,,,,,verify
+SMP-2046.jpg,SMP-2046,Overall length,6.500 ±.010,1,Top,6.49,6.51,in,measure
+SMP-2046.jpg,SMP-2046,Overall width,4.000 ±.015,1,Top,3.985,4.015,in,measure
+SMP-2046.jpg,SMP-2046,Mounting hole diameter,6X Ø.201 ±.005 THRU,6,Top,0.196,0.206,in,measure
+SMP-2046.jpg,SMP-2046,Bore diameter,Ø.750 +.002/-.000 THRU,1,Top,0.75,0.752,in,measure
+SMP-2046.jpg,SMP-2046,Counterbore diameter,CBORE Ø1.125 ±.003,1,Top,1.122,1.128,in,measure
+SMP-2046.jpg,SMP-2046,Counterbore depth,.125 ±.005 DP,1,Top,0.12,0.13,in,measure
+SMP-2046.jpg,SMP-2046,Plate thickness,.500 ±.003,1,Front,0.497,0.503,in,measure
+SMP-2046.jpg,SMP-2046,Flatness,FLATNESS .003,1,Front,,,,verify
+SMP-2046.jpg,SMP-2046,Material,Material: 6061-T651 aluminum,1,,,,,verify
+SMP-2047.jpg,SMP-2047,Flange outside diameter,Ø6.000 ±.015,1,Top,5.985,6.015,in,measure
+SMP-2047.jpg,SMP-2047,Bolt hole diameter,6X Ø.343 ±.003 THRU,6,Top,0.34,0.346,in,measure
+SMP-2047.jpg,SMP-2047,Center bore,Ø1.250 +.003/-.000 THRU,1,Top,1.25,1.253,in,measure
+SMP-2047.jpg,SMP-2047,Flange thickness,.500 ±.005,1,Front,0.495,0.505,in,measure
+SMP-2047.jpg,SMP-2047,Hub height,.400 ±.015,1,Front,0.385,0.415,in,measure
+SMP-2047.jpg,SMP-2047,Hub diameter,Ø2.000 ±.015,1,Front,1.985,2.015,in,measure
+SMP-2047.jpg,SMP-2047,Material,Material: 304 stainless steel,1,,,,,verify
+SMP-2048.jpg,SMP-2048,Base length,110.0 ±0.3,1,Front,109.7,110.3,mm,measure
+SMP-2048.jpg,SMP-2048,Upright height,82.5 ±0.1,1,Front,82.4,82.6,mm,measure
+SMP-2048.jpg,SMP-2048,Base thickness,5.0 ±0.1,1,Front,4.9,5.1,mm,measure
+SMP-2048.jpg,SMP-2048,Upright thickness,5.0 ±0.1,1,Front,4.9,5.1,mm,measure
+SMP-2048.jpg,SMP-2048,Bend angle,90° ±0.5°,1,Front,,,,verify
+SMP-2048.jpg,SMP-2048,Bracket width,60.0 ±0.2,1,Side,59.8,60.2,mm,measure
+SMP-2048.jpg,SMP-2048,Base hole diameter,2X Ø6.6 ±0.1 THRU BASE,2,Top,6.5,6.7,mm,measure
+SMP-2048.jpg,SMP-2048,Upright slot width,SLOT 9.9 ±0.1 WIDE,1,Side,9.8,10.0,mm,measure
+SMP-2048.jpg,SMP-2048,Material,Material: 1018 cold-rolled steel,1,,,,,verify
+SMP-2049.jpg,SMP-2049,Diameter A,Ø1.000 ±.005,1,Side,0.995,1.005,in,measure
+SMP-2049.jpg,SMP-2049,Length A,2.333 ±.015,1,Side,2.318,2.348,in,measure
+SMP-2049.jpg,SMP-2049,Diameter B,Ø.875 ±.003,1,Side,0.872,0.878,in,measure
+SMP-2049.jpg,SMP-2049,Length B,2.333 ±.015,1,Side,2.318,2.348,in,measure
+SMP-2049.jpg,SMP-2049,Diameter C,Ø.625 ±.002,1,Side,0.623,0.627,in,measure
+SMP-2049.jpg,SMP-2049,Overall length,7.000 ±.015,1,Side,6.985,7.015,in,measure
+SMP-2049.jpg,SMP-2049,End chamfers,2X .03 X 45° CHAM,2,Side,,,,verify
+SMP-2049.jpg,SMP-2049,Keyway width,KEYWAY .188 +.002/-.000 WIDE,1,Side,0.188,0.19,in,measure
+SMP-2049.jpg,SMP-2049,Runout,RUNOUT .002 TO DATUM A,1,Side,,,,verify
+SMP-2049.jpg,SMP-2049,Material,Material: Delrin acetal,1,,,,,verify
+SMP-2050.jpg,SMP-2050,Block length,4.000 ±.010,1,Top,3.99,4.01,in,measure
+SMP-2050.jpg,SMP-2050,Block width,2.800 ±.010,1,Top,2.79,2.81,in,measure
+SMP-2050.jpg,SMP-2050,Slot width,SLOT .375 ±.005 WIDE,1,Top,0.37,0.38,in,measure
+SMP-2050.jpg,SMP-2050,Tapped holes,4X 1/4-20 UNC-2B ▽.50,4,Top,,,,verify
+SMP-2050.jpg,SMP-2050,Pocket depth,POCKET .467 ±.003 DP,1,Top,0.464,0.47,in,measure
+SMP-2050.jpg,SMP-2050,Block height,1.400 ±.010,1,Front,1.39,1.41,in,measure
+SMP-2050.jpg,SMP-2050,Material,Material: 7075-T6 aluminum,1,,,,,verify
