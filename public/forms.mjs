@@ -70,17 +70,26 @@ function render(){
       else for(const v of ["","Pass","Fail"])input.add(new Option(v||"Select result",v));
       input.value=read(key,{}).answers?.[r.key]??"";
       const decision=tag("small",judge(row,input.value),label);
+      let throughInput;
+      if(r.throughKey){
+        const throughLabel=tag("label","Through hole",g);
+        throughInput=tag("select","",throughLabel);
+        for(const value of ["","Pass","Fail"])throughInput.add(new Option(value||"Select result",value));
+        throughInput.value=read(key,{}).answers?.[r.throughKey]||"";
+      }
       input.oninput=()=>{
         const inspection=read(key,{});
         inspection.answers??={};
         inspection.answers[r.key]=input.value;
+        if(throughInput)inspection.answers[r.throughKey]=throughInput.value;
         const status=judge(row,input.value);
         decision.textContent=row.bounds&&input.value&&status==="Pending"?"Enter a decimal number":status;
         summary.textContent="Balloon "+r.balloon+" · "+r.location+" · "+
-          (row.bounds&&status!=="Pending"?input.value+" "+row.unit+" · ":"")+status;
+          (row.bounds&&status!=="Pending"?input.value+" "+row.unit+" · ":"")+status+(throughInput?" · THRU "+(throughInput.value||"Pending"):"");
         try{localStorage.setItem(key,JSON.stringify(inspection));notice.textContent="Saved to your account.";}
         catch{notice.textContent="Result could not be saved. Check browser storage and retry.";}
       };
+      if(throughInput)throughInput.onchange=input.oninput;
       for(const [k,l] of [["designator","Characteristic designator"],["tool","Designed / qualified tooling"],["nc","Nonconformance reference"],["comments","Additional comments"]])field(g,l,extra,k);
       if(r.comments)tag("p","Recorded evidence · "+r.comments,d);
     }

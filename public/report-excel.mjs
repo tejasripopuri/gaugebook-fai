@@ -30,10 +30,13 @@ function expandRows(xml,extra,lastRow){
 // Derive the Form 1 summary directly from Form 3's editable result cells.
 function summaryFormula(checks){
   if(!checks.length)return '"Not yet inspected"';
-  const scores=checks.map(({bounds},index)=>{
+  const scores=checks.map(({bounds,throughStatus},index)=>{
     const cell="'Form 3'!E"+(8+index);
     if(!bounds)return `IF(${cell}="Fail",2,IF(${cell}="Pass",0,1))`;
-    return `IF(ISNUMBER(${cell}),IF(AND(${cell}>=${bounds[0]},${cell}<=${bounds[1]}),0,2),1)`;
+    const diameter=`IF(ISNUMBER(${cell}),IF(AND(${cell}>=${bounds[0]},${cell}<=${bounds[1]}),0,2),1)`;
+    if(!throughStatus)return diameter;
+    const comment="'Form 3'!H"+(8+index);
+    return `MAX(${diameter},IF(RIGHT(${comment},9)="THRU Fail",2,IF(RIGHT(${comment},9)="THRU Pass",0,1)))`;
   });
   return 'CHOOSE(1+MAX('+scores.join(",")+'),"Pass","Not yet inspected","Fail")';
 }
@@ -59,10 +62,10 @@ export async function makeWorkbook(bytes,report,plan,inspection,zipLibrary=globa
   const kept=new Map();
   rows.forEach((r,i)=>{
     const n=originalSlots.get(r.key),characteristic=plan.rows.find(c=>c.id===r.id),reading=inspection.answers?.[r.key],decision=judge(characteristic,reading);
-    status.push(decision);checks.push(characteristic);
+    status.push(r.throughStatus?summarize([decision,r.throughStatus]):decision);checks.push({...characteristic,throughStatus:r.throughStatus});
     kept.set(n,i+8);actual["A"+n]=r.balloon;
     actual["B"+n]=r.location;actual["D"+n]=r.requirement;actual["C"+n]=r.designator;actual["E"+n]=characteristic.bounds&&decision!=="Pending"?Number(reading):reading;
-    actual["F"+n]=r.tool;actual["G"+n]=r.nc;actual["H"+n]=r.comments;
+    actual["F"+n]=r.tool;actual["G"+n]=r.nc;actual["H"+n]=[r.comments,r.throughStatus&&"THRU "+r.throughStatus].filter(Boolean).join(" / ");
   });
   const path=n=>"xl/worksheets/sheet"+n+".xml";
   for(const [n,inputs,cache] of [[1,part,{["A"+(28+shift)]:summarize(status)}],[2,products,ids],[3,actual,ids]]){
@@ -78,7 +81,7 @@ export async function makeWorkbook(bytes,report,plan,inspection,zipLibrary=globa
       if(checks.length>45){
         const start=31+shift;
         const helpers=checks.map((check,i)=>{
-          const single=summaryFormula([check]).replaceAll("!E8","!E"+(8+i));
+          const single=summaryFormula([check]).replaceAll("!E8","!E"+(8+i)).replaceAll("!H8","!H"+(8+i));
           return '<x:row r="'+(start+i)+'" hidden="1"><x:c r="A'+(start+i)+'" t="str"><x:f>'+escapeXml(single)+'</x:f><x:v>'+status[i]+'</x:v></x:c></x:row>';
         });
         const range="A"+start+":A"+(start+checks.length-1);
