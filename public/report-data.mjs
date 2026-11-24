@@ -11,7 +11,7 @@ export function formatResult(row,value,status,throughStatus){
   return row.bounds&&status!=="Pending"?value+" "+row.unit+" · "+overall:overall;
 }
 export function resultRows(plan,inspection,report) {
-  const numbered=numberedRows(plan,inspection.removed);
+  const numbered=numberedRows(plan,inspection.removed).filter(row=>!plan.confirmedOnly||row.confirmed);
   const throughByParent=new Map();
   const merged=new Set();
   for(const row of numbered){

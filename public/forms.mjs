@@ -8,10 +8,12 @@ const plan=drawingId?JSON.parse(localStorage.getItem(key+"-plan")):await (await 
 if(drawingId){
   const back="review.html?drawing="+encodeURIComponent(drawingId);
   document.querySelector("header a").href=back;
-  if(!plan||!plan.rows.length||!plan.rows.every(r=>r.confirmed&&plan.approved[r.sheet])||!Array.from({length:plan.pageCount},(_,i)=>plan.approved[i+1]).every(Boolean)){
-    location.replace(back);throw Error("Complete the drawing review first.");
+  if(!plan||!Array.isArray(plan.rows)){
+    location.replace(back);throw Error("Open the uploaded drawing first.");
   }
-  document.querySelector("main>p").textContent="A&B Foundry inspection report for "+plan.name;
+  const reviewed=plan.rows.length>0&&plan.rows.every(r=>r.confirmed)&&Array.from({length:plan.pageCount},(_,i)=>plan.approved?.[i+1]).every(Boolean);
+  document.querySelector("main>p").textContent="A&B Foundry inspection report for "+plan.name+(reviewed?"":" · Sheet review in progress. Form 3 includes confirmed characteristics.");
+  plan.confirmedOnly=!reviewed;
   document.querySelector("a[download]").hidden=true;
 }
 const read=(k,fallback)=>JSON.parse(localStorage.getItem(k)||"null")??fallback;

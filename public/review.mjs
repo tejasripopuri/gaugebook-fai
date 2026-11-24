@@ -40,7 +40,7 @@ function updateSummary(){
   const status=summarize(done?statuses:[...statuses,"Pending"]);
   el("summary").textContent=status;el("summary").className=status.toLowerCase();
   el("counts").textContent=statuses.filter(s=>s!=="Pending").length+" of "+statuses.length+" results entered · "+Object.values(plan.approved).filter(Boolean).length+" of "+doc.count+" sheets reviewed";
-  el("forms").hidden=!done||!statuses.length;
+  el("forms").hidden=false;
 }
 function redraw(){
   const rows=onPage(),row=active(),idx=r=>plan.rows.indexOf(r)+1;
@@ -219,7 +219,7 @@ try{
     plan.offView=[];plan.rows=reviewed;
     plan.scanned={};plan.approved={};plan.autoViews=true;
   }
-  el("title").textContent=file.name;el("forms").href="forms.html?drawing="+id;
+  el("title").textContent=file.name;el("forms").href="forms.html?drawing="+encodeURIComponent(id);
   for(let i=1;i<=doc.count;i++)el("sheet").add(new Option(i,i));
   plan.pageCount=doc.count;save();document.dispatchEvent(new Event("gaugebook:ready"));await show(1);
   if(!practice&&doc.count===1&&plan.scanned[1]&&!plan.imageMatches?.[1]&&!plan.checkedImageLayout){
