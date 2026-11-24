@@ -16,7 +16,7 @@ if(drawingId){
 }
 const read=(k,fallback)=>JSON.parse(localStorage.getItem(k)||"null")??fallback;
 let report=read(key+"-forms",initialReport(plan)),active=1;
-function save(){try{localStorage.setItem(key+"-forms",JSON.stringify(report));notice.textContent="Saved in this browser.";}catch{notice.textContent="Storage unavailable. Download the report before closing.";}}
+function save(){try{localStorage.setItem(key+"-forms",JSON.stringify(report));notice.textContent="Saved to your account.";}catch{notice.textContent="Storage unavailable. Download the report before closing.";}}
 function tag(name,text,parent){const e=document.createElement(name);if(text)e.textContent=text;parent?.append(e);return e;}
 function grid(parent){const e=tag("div","",parent);e.className="formgrid";return e;}
 function field(parent,label,obj,k,options) {
@@ -78,7 +78,7 @@ function render(){
         decision.textContent=row.bounds&&input.value&&status==="Pending"?"Enter a decimal number":status;
         summary.textContent="Balloon "+r.balloon+" · "+r.location+" · "+
           (row.bounds&&status!=="Pending"?input.value+" "+row.unit+" · ":"")+status;
-        try{localStorage.setItem(key,JSON.stringify(inspection));notice.textContent="Saved in this browser.";}
+        try{localStorage.setItem(key,JSON.stringify(inspection));notice.textContent="Saved to your account.";}
         catch{notice.textContent="Result could not be saved. Check browser storage and retry.";}
       };
       for(const [k,l] of [["designator","Characteristic designator"],["tool","Designed / qualified tooling"],["nc","Nonconformance reference"],["comments","Additional comments"]])field(g,l,extra,k);

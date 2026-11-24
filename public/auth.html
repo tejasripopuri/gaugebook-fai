@@ -1,0 +1,13 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sign in · Gaugebook</title><link rel="stylesheet" href="style.css">
+<style>.auth{max-width:440px;margin:6vh auto}.auth form{display:grid;gap:14px}.auth .switch{margin-top:16px;font-size:.95rem}#err{min-height:1.4em;margin:0}.auth button[type=submit]{margin-top:4px}</style>
+<header><div class="brand"><b>◎</b> Gaugebook</div></header>
+<main><section class="card auth"><small>FIRST ARTICLE INSPECTION</small><h1 id="title">Sign in</h1>
+<form id="form" novalidate>
+<label id="nameRow" hidden>Name<input id="name" autocomplete="name"></label>
+<label>Email<input id="email" type="email" autocomplete="email" required></label>
+<label>Password<input id="password" type="password" autocomplete="current-password" required minlength="10"></label>
+<p id="err" class="error" role="alert"></p>
+<button type="submit" id="submit">Sign in</button></form>
+<p class="switch"><span id="prompt">New to Gaugebook?</span> <button class="link" id="toggle" type="button">Create an account</button></p>
+</section></main>
+<script type="module" src="auth.mjs"></script></html>

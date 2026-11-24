@@ -1,10 +1,10 @@
 # Gaugebook • First article inspection
-A browser-based inspection register for uploaded engineering drawings. Each uploaded file has its own inspection, stored in this browser. The supplied SMP-1001 Rev A has a pre-reviewed register. Use a current desktop Chrome, Edge or Firefox on HTTPS or localhost.
+A browser-based inspection register for uploaded engineering drawings. Each uploaded file has its own inspection. Inspectors sign in, and inspections, report forms and uploaded drawings are saved to their account, so they're available on any device. The supplied SMP-1001 Rev A has a pre-reviewed register. Use a current desktop Chrome, Edge or Firefox on HTTPS or localhost.
 
 ## 1. Run the app on Windows
 1. Extract the ZIP. Open the folder containing this README and type **powershell** in File Explorer’s address bar.
-2. With Python 3 installed, run `py -m http.server 8000 --bind 127.0.0.1 --directory public`. On macOS or Linux use `python3` in place of `py`.
-3. Open http://localhost:8000. The sample opens automatically. Select **Upload drawing** and choose the supplied PDF or its included full-sheet image, public/drawing.png. Click a balloon to see its cropped source and automatic OCR draft.
+2. With Node.js 22 or later installed, run `npm install`, then `npm run dev`.
+3. Open http://localhost:3000 and create an account. The sample opens automatically. Select **Upload drawing** and choose the supplied PDF or its included full-sheet image, public/drawing.png. Click a balloon to see its cropped source and automatic OCR draft.
 4. Select **Balloon 5 · Bore diameter**. Enter 1.250, then 1.249. The first passes and the second fails. Clear the field to return it to pending.
 5. Select balloon 11 and enter a separate diameter for each mounting hole. Record a certificate reference for material and finish and select the verified outcome. Select **Drawing references and inspection instructions** for the basic locations and datum definitions.
 6. Any failing result makes the part fail immediately. All 37 results must pass for an overall pass. Other states display **Not yet inspected** with the progress count. The reset control clears this inspection after confirmation.
@@ -23,18 +23,31 @@ Read the [one-page delivery brief](FAI-brief.pdf) for the research, sample recon
 
 The source tree contains the running app, test suite, CI workflow and example forms. The bundled development history can be opened with `git clone -b main ./gaugebook-fai.bundle gaugebook-history`. Review the GitHub Actions tab for CI results.
 
-## 4. Publish on Vercel
-1. Sign in to Vercel. Choose Add New → Project. Import the GitHub repository, granting access to that repository.
-2. Select Other as framework, keep root directory at the repository root, skip install and build, and use public as output directory (also set in vercel.json).
-3. Deploy and open the assigned HTTPS URL. Upload the sample and repeat step 1’s bore check. Reload and verify the reading persists, then clear it. Copy the production URL and repository URL for submission.
-4. Later pushes to main trigger production deployment when Git integration is enabled. Use previews for changes. In Vercel open the production deployment and show its linked GitHub commit, build log and live URL. During the demo record one passing and one failing bore value, then download Form 3 to show traceability.
+## 4. Accounts and server storage
+- **Sign-in:** `public/auth.html` handles sign-in and account creation.
+- **Sync:** `public/boot.mjs` runs before each page. It sends signed-out visitors to sign in, loads the user's saved data from the server, and saves every later change to `gaugebook-*` browser storage back to the server.
+- **Header:** shows a save-status chip and **Sign out**. Changes made offline are queued and sent when the connection returns.
+- **Drawings:** `public/uploads.mjs` caches drawings in the browser and uploads them to the account. The workspace page lists the user's uploaded drawings.
 
-## 5. Run on a Hostinger server
-Assumption: a VPS with administrator access and a domain. For a browser-local training demo, serve only public/ over HTTPS. A shared production system requires the following backend implementation and acceptance work.
-1. Provision Ubuntu LTS on the VPS. Add a non-root deploy user with an SSH key; verify a second session before disabling password/root SSH. Point the domain A/AAAA records at the server. In hPanel restrict SSH to admin addresses and allow public 80/443. Expose no database port.
-2. Clone the approved commit, run npm test, copy public/ to a release directory, and configure Caddy with the domain, that directory as root, and file_server. Verify HTTPS and MIME type for .mjs. Keep the prior release directory for rollback.
-3. Implement an authenticated API behind Caddy at /api. Create a private PostgreSQL database with a restricted application role. Apply versioned migrations for users/roles, drawing revisions and hashes, inspection IDs/serials, versioned characteristic limits, individual readings and append-only audit events. Add a unique constraint on inspection/balloon/occurrence, optimistic locking, and server-side validation and disposition in a transaction. Replace browser-local writes with this API.
-4. Connect an OIDC identity provider. Require named accounts and MFA. Map inspector, reviewer and administrator roles; authorize every read/write by project and role. Use secure HTTP-only SameSite session cookies, CSRF protection for writes and session expiry. Record who changed or approved a result and when; freeze approved versions.
-5. Store original PDFs and certificates in private versioned object storage or a protected volume outside the web root. Validate byte type, size and page limits, quarantine and scan incoming files, use random keys and record hashes. Serve files only after authorization, through short-lived links. Keep credentials out of Git and logs.
-6. Take nightly encrypted PostgreSQL dumps and back up objects, configuration and audit records to a separate account. Set retention with quality management. Keep secrets recoverable separately. Monthly, restore into an isolated VPS and reconcile an inspection, its file hashes and audit history. Monitor backup age, disk use, certificate expiry and errors.
-7. Apply OS patches and review PDF.js and Tesseract updates in staging. Test login isolation, upload rejection, evidence retrieval, tolerance boundaries, simultaneous edits, restoration and rollback. Back up before migrations, deploy a tagged release, smoke-test and retain a compatible rollback path. Obtain engineering/quality approval and resolve the drawing ambiguities before using real records.
+The API is a set of Vercel Functions in `api/`, with shared code in `lib/`:
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/auth/signup`, `/login`, `/logout` · `GET /api/auth/me` | Accounts (scrypt-hashed passwords, HttpOnly signed session cookie, 30 days) |
+| `GET /api/state` · `PUT`/`DELETE /api/state?key=gaugebook-…` | The user's saved inspections, report forms and drawing reviews |
+| `GET /api/drawings` · `GET`/`POST /api/drawings?id=<sha256>` | List, download and upload drawings (PDF, PNG, JPEG, up to 100 MB, uploaded directly to storage) |
+
+Data lives in a **private Vercel Blob store**: `users/<hash of email>.json` and `data/<userId>/…`.
+
+To run locally, run `npm install`, then `npm run dev`, and open http://localhost:3000. Without a Blob token, data is kept in `.data/`.
+
+Known limits:
+- There is no password reset yet.
+- Sign-in attempts aren't rate-limited.
+- If the same inspection is edited on two devices at once, the last save wins.
+
+## 5. Publish on Vercel
+1. Sign in to Vercel. Choose Add New → Project and import this GitHub repository. Framework: **Other**. `vercel.json` sets the output directory (`public`), no build step and `npm install`.
+2. **Storage → Create → Blob**, choose **Private** access, and connect it to the project. This adds `BLOB_READ_WRITE_TOKEN`.
+3. **Settings → Environment Variables**: add `SESSION_SECRET`, a random value of at least 32 characters (e.g. `openssl rand -base64 48`). Then redeploy.
+4. Pushes to `main` deploy to production once Git integration is connected. Other branches get preview URLs.
