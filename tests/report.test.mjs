@@ -17,6 +17,8 @@ test("report preserves separate occurrences, evidence and failed readings",()=>{
   assert.ok(rows.every(r=>! /^(?:4X )?THRU$/.test(r.requirement)));
   assert.equal(row.requirement,"4X Ø.281 ±.005 THRU");
   assert.equal(row.throughKey,"13-2");
+  assert.equal(rows.find(r=>r.key==="12-0").result,"Pending");
+  assert.equal(row.result,".290 in · Fail");
 });
 test("download each template and the complete paginated packet",async()=>{
   const r=initialReport(),rows=resultRows(plan,{},r);let individual=0;
