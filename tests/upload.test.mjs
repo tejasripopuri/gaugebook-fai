@@ -48,10 +48,11 @@ test("only view dimensions receive balloons on unfamiliar drawings",()=>{
     line("J",300,300),line("J CBORE Ø.850 ±.002 X .125 ±.003 DP",800,200),
     line("95",220,151),line("4.250 ±.005",800,600),line("REV 4",700,850),
   ],[[.15,.15,.55,.55]],1000,1000);
-  assert.deepEqual(rows.map(r=>r.off),[true,true,false,true]);
-  assert.deepEqual(rows[0].bounds,[.848,.852]);assert.deepEqual(rows[1].bounds,[.122,.128]);
-  assert.deepEqual(rows[0].xy,rows[1].xy);
-  assert.deepEqual(rows[0].sourceBox,[.795,.196,.805,.204]);
+  // Only the dimension on the view is proposed. The requirement list entry ("J CBORE ..."),
+  // the dimension outside the views and the revision text are ignored.
+  assert.deepEqual(rows.map(r=>r.source),["95"]);
+  assert.equal(rows[0].off,false);
+  assert.ok(rows.every(r=>!/CBORE|4\.250|REV/.test(r.source)));
 });
 
 test("angular requirements inherit the current sheet's readable tolerance",async()=>{

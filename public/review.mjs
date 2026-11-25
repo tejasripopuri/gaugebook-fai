@@ -274,7 +274,7 @@ async function scan(){
       plan.areas[page]=layout.areas;
       partition();
       for(const p of layout.rows)insert(p,...p.xy);
-      for(const p of layout.supplemental)insert(p,...p.xy,true);
+      // supplemental (off-drawing) items from practice layouts are not proposed: drawing views only
     }else{
       progress(.05,"Reading drawing text");
       const embedded=await doc.labels?.(page).catch(()=>[])||[];

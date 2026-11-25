@@ -45,6 +45,8 @@ The source tree contains the running app, test suite, CI workflow and example fo
 | `GET /api/drawings` · `GET`/`POST /api/drawings?id=<sha256>` | List, download and upload drawings (PDF, PNG, JPEG up to 100 MB; checked against their hash and file type) |
 | `GET /api/health` | Health check |
 
+**Only callouts on the drawing views get balloons.** Text beside the drawing is never proposed: general notes, requirement lists (including letter-tagged entries such as `B  Ø1.250 THRU`), tables and the title block. To inspect such a requirement, click its feature on the drawing and enter it.
+
 **General (title-block) tolerances.** When a drawing states general tolerances, such as `.XX ±.01  .XXX ±.005`, a plain dimension printed without its own tolerance takes the one for its number of decimal places. It is shown as, for example, `2.000 ±.005`, with a note that the tolerance came from the title block. This also covers the forms image OCR produces, such as `-XX +.01`. These keep just the dimension, recorded for information:
 - basic dimensions: marked `BSC`/`BASIC`, drawn in a box, or listed in a note that calls them basic
 - reference dimensions: in brackets, e.g. `(2.000)`, or marked `REF`
