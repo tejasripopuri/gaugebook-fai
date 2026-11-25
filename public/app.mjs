@@ -1,3 +1,4 @@
+import {makeDraggable} from "./drag-pins.mjs";
 import {openUpload} from "./uploads.mjs";
 import {readDrawing,sourceCrop,recognize} from "./image-reader.mjs";
 import {digest,judge,summarize,numberedRows} from "./plan.mjs";
@@ -5,7 +6,7 @@ let drawing;
 const readings=new Map();
 const el=id=>document.getElementById(id);
 const key="gaugebook-v1-"+digest;
-let original,removed=[],plan, index=0, answers={}, evidence={};
+let original,removed=[],plan, index=0, answers={}, evidence={}, moved={};
 function node(tag,content,cls) {
   const item=document.createElement(tag);
   if(content!==undefined) item.textContent=content;
@@ -17,7 +18,7 @@ function message(text,error=false) {
   el("message").className=error?"error":"";
 }
 function save() {
-  try {localStorage.setItem(key,JSON.stringify({answers,evidence,removed}));}
+  try {localStorage.setItem(key,JSON.stringify({answers,evidence,removed,moved}));}
   catch {message("Browser storage is unavailable. Entries will be lost when this page closes.",true);}
 }
 function summary() {
@@ -45,6 +46,7 @@ function paintPins(){
     pin.title=pin.title.replace(/ · (Pass|Fail|Not yet inspected)$/,"")+" · "+s;
   });
 }
+el("resetPins").onclick=()=>{moved={};save();renderPlan(index);};
 el("balloonPdf").onclick=async()=>{
   const button=el("balloonPdf");button.disabled=true;message("Preparing the ballooned drawing…");
   try{
@@ -140,12 +142,15 @@ function renderPlan(selected){
   plan.rows.forEach((r,i)=>{
     el("select").add(new Option(r.name,i));
     if(r.category==="Drawing note"||(i && plan.rows[i-1].group===r.group))return;
-    const pin=node("button",r.balloon,"pin");pin.dataset.group=r.group;pin.style.left=r.xy[0]/14+"%";pin.style.top=r.xy[1]/10.82+"%";
+    const xy=moved[r.group]??r.xy; // balloons the inspector dragged keep their new place
+    const pin=node("button",r.balloon,"pin");pin.dataset.group=r.group;pin.style.left=xy[0]/14+"%";pin.style.top=xy[1]/10.82+"%";
+    makeDraggable(pin,el("paper"),(x,y)=>{moved[r.group]=[Math.round(x*1400),Math.round(y*1082)];save();el("resetPins").hidden=false;});
     pin.title=pin.ariaLabel="Balloon "+r.balloon+" · "+r.name;
     pin.onclick=()=>{choose(i);el("select").focus();};el("paper").append(pin);
   });
   plan.references.forEach(s=>el("refs").append(node("p",s)));
   el("total").textContent=document.querySelectorAll(".pin").length+" balloons";
+  el("resetPins").hidden=!Object.keys(moved).length;
   el("undo").disabled=!removed.length;el("delete").disabled=!plan.rows.length;
   if(plan.rows.length)choose(Math.min(selected,plan.rows.length-1));
   else {el("entry").replaceChildren();el("prev").disabled=true;el("next").disabled=true;}
@@ -161,7 +166,7 @@ el("select").onchange=e=>choose(Number(e.target.value));
 el("next").onclick=()=>choose(index+1);el("prev").onclick=()=>choose(index-1);
 el("reset").onclick=()=>{
   if(plan&&confirm("Clear all measurements, evidence and report form entries and start a new inspection of this part?")) {
-    answers={};evidence={};removed=[];localStorage.removeItem(key+"-forms");save();renderPlan(0);
+    answers={};evidence={};removed=[];moved={};localStorage.removeItem(key+"-forms");save();renderPlan(0);
   }
 };
 el("upload").onclick=()=>el("file").click();
@@ -180,11 +185,11 @@ async function run(file) {
   finally {el("upload").disabled=false;el("file").value="";}
 }
 el("file").onchange=e=>{if(e.target.files[0])run(e.target.files[0]);};
-try {const data=JSON.parse(localStorage.getItem(key)||"{}");removed=data.removed||[];answers=data.answers||{};evidence=data.evidence||{};} catch {}
+try {const data=JSON.parse(localStorage.getItem(key)||"{}");removed=data.removed||[];answers=data.answers||{};evidence=data.evidence||{};moved=data.moved||{};} catch {}
 window.addEventListener("storage",event=>{
   if(event.key!==key)return;
   const data=JSON.parse(localStorage.getItem(key)||"{}");
-  answers=data.answers||{};evidence=data.evidence||{};removed=data.removed||[];
+  answers=data.answers||{};evidence=data.evidence||{};removed=data.removed||[];moved=data.moved||{};
   if(plan)renderPlan(index);
 });
 await run();

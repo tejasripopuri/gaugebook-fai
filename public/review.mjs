@@ -6,6 +6,7 @@ import {drawingFile} from "./uploads.mjs";
 import {openSheets,dimensionLines,verifiedImageLines} from "./image-reader.mjs";
 import {generalRows} from "./general-plan.mjs";
 import {judge,summarize} from "./plan.mjs";
+import {makeDraggable} from "./drag-pins.mjs";
 const el=id=>document.getElementById(id),id=new URLSearchParams(location.search).get("drawing");
 const key="gaugebook-upload-"+id,read=(k,fallback)=>JSON.parse(localStorage.getItem(k)||"null")??fallback;
 let plan,doc,page=1,canvas,selected,scanning=false;
@@ -60,6 +61,7 @@ function redraw(){
   el("approve").disabled=!areas().length||scanning||plan.approved[page]||rows.some(r=>!r.confirmed);
   el("scan").disabled=scanning||plan.scanned[page];el("sheet").disabled=scanning;
   el("undo").hidden=!plan.deleted.length;
+  el("resetPins").hidden=!onPage().some(r=>r.moved&&r.home);
   const fromPdf=onPage().filter(pdfConfirmable);
   el("confirmPdf").hidden=!fromPdf.length;el("confirmPdf").disabled=scanning;
   el("confirmPdf").textContent="Confirm PDF-text values ("+fromPdf.length+")";
@@ -76,6 +78,7 @@ function redraw(){
     const pin=document.createElement("button");pin.className="pin"+(r===row?" active":"");pin.textContent=idx(r);pin.dataset.id=r.id;
     pin.style.left=r.xy[0]*100+"%";pin.style.top=r.xy[1]*100+"%";pin.title=r.name;if(placing)pin.style.pointerEvents="none";
     pin.onclick=e=>{e.stopPropagation();selected=r.id;redraw();};el("paper").append(pin);
+    if(!placing)makeDraggable(pin,el("paper"),(x,y)=>{r.xy=[x,y];r.moved=true;save();el("resetPins").hidden=false;});
   }
   el("editor").hidden=!row;el("results").replaceChildren();
   if(row){
@@ -118,6 +121,10 @@ function editingRequirement(){
 }
 el("requirement").oninput=editingRequirement;el("method").onchange=editingRequirement;
 el("rows").onchange=e=>{selected=Number(e.target.value);redraw();};
+el("resetPins").onclick=()=>{
+  for(const r of onPage())if(r.moved&&r.home){r.xy=[...r.home];delete r.moved;}
+  save();redraw();
+};
 // Bulk confirmation: only values whose callout and limits were read straight from the PDF's text.
 // Scanned-image readings, title-block tolerances, attribute checks and unplaced callouts stay manual.
 function pdfConfirmable(r){
@@ -245,7 +252,7 @@ async function scan(){
         return;
       }
       if(plan.deleted.some(({row:r})=>r.sheet===page&&r.source===proposal.source&&Math.hypot(r.xy[0]-x,r.xy[1]-y)<.025))return;
-      const row=add(proposal,x,y);
+      const row=add(proposal,x,y);row.home=[x,y];
       row.name=proposal.name||row.name;row.unit=proposal.unit||"";
       row.unplaced=off;row.sourceBox=proposal.sourceBox;
       if(proposal.generalTolerance)row.generalTolerance=proposal.generalTolerance;
