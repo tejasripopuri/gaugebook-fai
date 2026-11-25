@@ -1,105 +1,167 @@
-import {identity,partFields,indexedParts,resultRows} from "./report-data.mjs";
+// Builds the AS9102 Forms 1–3 workbook (.xlsx) directly: bordered, labelled fields and Form 3
+// fields 5–12 in standard order, with field 9 showing the reading and its decision
+// ("6.004 in · Pass") coloured green / red / grey.
+import {identity,partFields,materialFields,componentFields,indexedParts,resultRows} from "./report-data.mjs";
 import {judge,summarize} from "./plan.mjs";
 
-const col=i=>String.fromCharCode(65+i);
-const escapeXml=v=>String(v).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-// The packaged template uses the x: namespace prefix and a styled cell at each input address.
-function populate(xml,values,caches={}){
-  return xml.replace(/<x:c\b([^>]*?)(?:\s*\/>|>([\s\S]*?)<\/x:c>)/g,(original,attrs,body="")=>{
-    const addr=attrs.match(/\br="([A-Z]+\d+)"/)?.[1];
-    if(!Object.hasOwn(values,addr)&&!Object.hasOwn(caches,addr))return original;
-    attrs=attrs.replace(/\s+t="[^"]*"/,"");
-    if(Object.hasOwn(caches,addr)){
-      const formula=body.match(/<x:f\b[^>]*>[\s\S]*?<\/x:f>/)?.[0];
-      if(!formula)throw Error("Missing workbook formula at "+addr);
-      return '<x:c'+attrs+' t="str">'+formula+'<x:v>'+escapeXml(caches[addr]??"")+'</x:v></x:c>';
+const esc=v=>String(v).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,"")
+  .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const colName=i=>String.fromCharCode(65+i);
+
+// ---- styles (index = position in cellXfs) ----
+const S={plain:0,title:1,subtitle:2,label:3,value:4,center:5,pass:6,fail:7,pending:8,section:9,statusPass:10,statusFail:11,statusPending:12,note:13};
+const STYLES=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<fonts count="8">
+<font><sz val="10"/><color rgb="FF163D39"/><name val="Calibri"/><family val="2"/></font>
+<font><b/><sz val="14"/><color rgb="FFFFFFFF"/><name val="Calibri"/><family val="2"/></font>
+<font><sz val="10"/><color rgb="FF173F48"/><name val="Calibri"/><family val="2"/></font>
+<font><b/><sz val="9"/><color rgb="FF173F48"/><name val="Calibri"/><family val="2"/></font>
+<font><b/><sz val="10"/><color rgb="FF175F3E"/><name val="Calibri"/><family val="2"/></font>
+<font><b/><sz val="10"/><color rgb="FF912D2D"/><name val="Calibri"/><family val="2"/></font>
+<font><sz val="10"/><color rgb="FF5F706C"/><name val="Calibri"/><family val="2"/></font>
+<font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Calibri"/><family val="2"/></font>
+</fonts>
+<fills count="8">
+<fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FF173F48"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFDCE8E4"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFEEF4F1"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFDFF3E5"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFFFDFDC"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FF2F6E62"/></patternFill></fill>
+</fills>
+<borders count="2">
+<border><left/><right/><top/><bottom/><diagonal/></border>
+<border><left style="thin"><color rgb="FF9FB3AE"/></left><right style="thin"><color rgb="FF9FB3AE"/></right><top style="thin"><color rgb="FF9FB3AE"/></top><bottom style="thin"><color rgb="FF9FB3AE"/></bottom><diagonal/></border>
+</borders>
+<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+<cellXfs count="14">
+<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center" indent="1"/></xf>
+<xf numFmtId="0" fontId="2" fillId="3" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center" indent="1"/></xf>
+<xf numFmtId="0" fontId="3" fillId="4" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="top"/></xf>
+<xf numFmtId="0" fontId="4" fillId="5" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="5" fillId="6" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="6" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="7" fillId="7" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center"/></xf>
+<xf numFmtId="0" fontId="4" fillId="5" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center"/></xf>
+<xf numFmtId="0" fontId="5" fillId="6" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center"/></xf>
+<xf numFmtId="0" fontId="6" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment vertical="center"/></xf>
+<xf numFmtId="0" fontId="6" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf>
+</cellXfs>
+<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+</styleSheet>`;
+
+// ---- a small sheet builder ----
+class Sheet{
+  constructor(name,widths){this.name=name;this.widths=widths;this.rows=[];this.merges=[];this.freeze=null;}
+  // cells: array of [value, style, span]; span merges that many columns
+  add(cells,{height}={}){
+    const r=this.rows.length+1,out=[];let c=0;
+    for(const [value,style=S.value,span=1] of cells){
+      out.push({ref:colName(c)+r,value,style,width:this.widths.slice(c,c+span).reduce((a,b)=>a+b,0)});
+      for(let k=1;k<span;k++)out.push({ref:colName(c+k)+r,value:"",style});
+      if(span>1)this.merges.push(colName(c)+r+":"+colName(c+span-1)+r);
+      c+=span;
     }
-    const val=values[addr];
-    if(val===undefined||val===null||val==="")return "<x:c"+attrs+"/>";
-    if(typeof val==="number")return "<x:c"+attrs+"><x:v>"+val+"</x:v></x:c>";
-    return '<x:c'+attrs+' t="inlineStr"><x:is><x:t xml:space="preserve">'+escapeXml(val)+'</x:t></x:is></x:c>';
-  });
-}
-function expandRows(xml,extra,lastRow){
-  if(!extra)return xml;
-  const model=xml.match(new RegExp('<x:row r="'+lastRow+'"[^>]*>[\\s\\S]*?</x:row>'))[0];
-  const move=ref=>ref.replace(/([A-Z]*)(\d+)/g,(m,c,n)=>c+(+n>lastRow?+n+extra:n));
-  xml=xml.replace(/\b(r|ref)="([A-Z0-9:]+)"/g,(m,k,ref)=>k+'="'+move(ref)+'"');
-  return xml.replace(model,()=>model+Array.from({length:extra},(_,i)=>model.replace(new RegExp('\\br="([A-Z]*)'+lastRow+'"','g'),(_,c)=>'r="'+c+(lastRow+1+i)+'"')).join(""));
-}
-// Derive the Form 1 summary directly from Form 3's editable result cells.
-function summaryFormula(checks){
-  if(!checks.length)return '"Not yet inspected"';
-  const scores=checks.map(({bounds,throughStatus,basic},index)=>{
-    const cell="'Form 3'!E"+(8+index);
-    if(basic)return "0"; // BASIC: recorded for information only
-    if(!bounds)return `IF(${cell}="Fail",2,IF(${cell}="Pass",0,1))`;
-    const diameter=`IF(ISNUMBER(${cell}),IF(AND(${cell}>=${bounds[0]},${cell}<=${bounds[1]}),0,2),1)`;
-    if(!throughStatus)return diameter;
-    const comment="'Form 3'!H"+(8+index);
-    return `MAX(${diameter},IF(RIGHT(${comment},9)="THRU Fail",2,IF(RIGHT(${comment},9)="THRU Pass",0,1)))`;
-  });
-  return 'CHOOSE(1+MAX('+scores.join(",")+'),"Pass","Not yet inspected","Fail")';
-}
-export async function makeWorkbook(bytes,report,plan,inspection,zipLibrary=globalThis.JSZip){
-  const zip=await zipLibrary.loadAsync(bytes);
-  const p=report.part,rows=resultRows(plan,inspection,report),status=[],part={},products={},actual={},checks=[],ids={};
-  function row(target,n,values){values.forEach((v,i)=>target[col(i)+n]=v);}
-  row(part,4,identity.map(k=>p[k]));row(ids,4,identity.map(k=>p[k]??""));
-  row(part,7,partFields.slice(0,4).map(k=>p[k]));row(part,10,partFields.slice(4).map(k=>p[k]));
-  const components=indexedParts(report),shift=Math.max(0,components.length-3);
-  components.forEach((v,i)=>row(part,17+i,v));
-  row(part,13,[p.kind||"Detail",p.scope,p.baseline,p.reason]);part["A"+(22+shift)]=p.nc;
-  row(part,25+shift,["Verified by","Verification date","Reviewed / approved by","Review date"].map(k=>p[k]));
-  const extra=Math.max(0,report.products.length-10);
-  report.products.forEach((r,i)=>row(products,i+7,Array.from({length:6},(_,j)=>r[j])));
-  row(products,19+extra,[report.tests["Functional test procedure"],report.tests["Acceptance report"]]);products["A"+(22+extra)]=report.tests.Comments;
-  if(plan.custom){
-    const heading="A&B Foundry · "+(p["Part number"]||plan.name)+" · First article inspection";
-    part.A2=products.A2=actual.A2=heading;
-    for(let i=report.products.length;i<10;i++)row(products,7+i,Array(6).fill(""));
+    // Excel does not grow wrapped rows by itself, so size each row for its longest text.
+    const lines=Math.max(1,...out.map(o=>String(o.value??"").split("\n").reduce((n,line)=>n+Math.max(1,Math.ceil(line.length*.85/Math.max(4,o.width-1))),0)));
+    this.rows.push({cells:out,height:height??Math.max(17,lines*13+5)});
+    return r;
   }
-  const originalSlots=new Map(plan.rows.flatMap(r=>r.repeats.map((_,i)=>r.id+"-"+i)).map((key,i)=>[key,i+8]));
-  const kept=new Map();
-  rows.forEach((r,i)=>{
-    const n=originalSlots.get(r.key),characteristic=plan.rows.find(c=>c.id===r.id),reading=inspection.answers?.[r.key],decision=judge(characteristic,reading);
-    status.push(r.throughStatus?summarize([decision,r.throughStatus]):decision);checks.push({...characteristic,throughStatus:r.throughStatus});
-    kept.set(n,i+8);actual["A"+n]=r.balloon;
-    actual["B"+n]=r.location;actual["D"+n]=r.requirement;actual["C"+n]=r.designator;actual["E"+n]=(characteristic.bounds&&decision!=="Pending")||(characteristic.basic&&reading&&!isNaN(Number(reading)))?Number(reading):reading;
-    actual["F"+n]=r.tool;actual["G"+n]=r.nc;actual["H"+n]=[r.comments,r.throughStatus&&"THRU "+r.throughStatus].filter(Boolean).join(" / ");
-  });
-  const path=n=>"xl/worksheets/sheet"+n+".xml";
-  for(const [n,inputs,cache] of [[1,part,{["A"+(28+shift)]:summarize(status)}],[2,products,ids],[3,actual,ids]]){
-    let xml=await zip.file(path(n)).async("string");
-    if(n===1)xml=expandRows(xml,shift,19);
-    if(n===2)xml=expandRows(xml,extra,16);
-    if(n===3)xml=expandRows(xml,Math.max(0,originalSlots.size-37),44);
-    xml=populate(xml,inputs,cache);
-    if(n===1){
-      const address="A"+(28+shift);
-      const summaryCell=new RegExp('(<x:c r="'+address+'"[^>]*><x:f>)[^<]*(</x:f>)');
-      let formula=summaryFormula(checks);
-      if(checks.length>45){
-        const start=31+shift;
-        const helpers=checks.map((check,i)=>{
-          const single=summaryFormula([check]).replaceAll("!E8","!E"+(8+i)).replaceAll("!H8","!H"+(8+i));
-          return '<x:row r="'+(start+i)+'" hidden="1"><x:c r="A'+(start+i)+'" t="str"><x:f>'+escapeXml(single)+'</x:f><x:v>'+status[i]+'</x:v></x:c></x:row>';
-        });
-        const range="A"+start+":A"+(start+checks.length-1);
-        formula='IF(COUNTIF('+range+',"Fail")>0,"Fail",IF(COUNTIF('+range+',"Pass")='+checks.length+',"Pass","Not yet inspected"))';
-        xml=xml.replace("</x:sheetData>",helpers.join("")+"</x:sheetData>");
-      }
-      xml=xml.replace(summaryCell,(_,start,end)=>start+escapeXml(formula)+end);
-    }
-    if(n===3)xml=xml.replace(/<x:row r="(\d+)"[^>]*>[\s\S]*?<\/x:row>/g,(row,num)=>{
-      const from=Number(num);
-      if(from<8)return row;
-      if(!kept.has(from))return "";
-      const to=kept.get(from);
-      return row.replace(/(<x:row r=")\d+/,(_,prefix)=>prefix+to)
-        .replace(/(r="[A-H])\d+"/g,(_,prefix)=>prefix+to+'"');
-    });
-    zip.file(path(n),xml);
+  xml(){
+    const cols=this.widths.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join("");
+    const rows=this.rows.map((row,i)=>`<row r="${i+1}" ht="${row.height}" customHeight="1">`+row.cells.map(({ref,value,style})=>{
+      if(value===undefined||value===null||value==="")return `<c r="${ref}" s="${style}"/>`;
+      if(typeof value==="number")return `<c r="${ref}" s="${style}"><v>${value}</v></c>`;
+      return `<c r="${ref}" s="${style}" t="inlineStr"><is><t xml:space="preserve">${esc(value)}</t></is></c>`;
+    }).join("")+`</row>`).join("");
+    const pane=this.freeze?`<sheetViews><sheetView workbookViewId="0"><pane ySplit="${this.freeze-1}" topLeftCell="A${this.freeze}" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>`:`<sheetViews><sheetView workbookViewId="0"/></sheetViews>`;
+    const merges=this.merges.length?`<mergeCells count="${this.merges.length}">${this.merges.map(m=>`<mergeCell ref="${m}"/>`).join("")}</mergeCells>`:"";
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">${pane}<sheetFormatPr defaultRowHeight="15"/><cols>${cols}</cols><sheetData>${rows}</sheetData>${merges}<pageMargins left="0.5" right="0.5" top="0.6" bottom="0.6" header="0.3" footer="0.3"/></worksheet>`;
   }
+}
+
+const statusStyle=s=>s==="Pass"?S.pass:s==="Fail"?S.fail:S.pending;
+const overallStyle=s=>s==="Pass"?S.statusPass:s==="Fail"?S.statusFail:S.statusPending;
+// A row of field labels followed by a row of their values.
+function fields(sheet,labels,values,spans){
+  sheet.add(labels.map((l,i)=>[l,S.label,spans?.[i]??1]),{height:labels.some(l=>l.length>28)?30:18});
+  sheet.add(values.map((v,i)=>[v??"",S.value,spans?.[i]??1]));
+}
+
+export function workbookData(report,plan,inspection){
+  const p=report.part,rows=resultRows(plan,inspection,report);
+  const subtitle=plan.custom?"A&B Foundry   ·   "+(p["Part number"]||plan.name)+"   ·   First article inspection"
+    :"A&B Foundry   ·   AS/EN/SJAC 9102 Rev C   ·   SMP-1001 Adapter Plate   ·   Training drawing";
+  const results=rows.map(r=>{
+    const row=plan.rows.find(c=>c.id===r.id),decision=judge(row,inspection.answers?.[r.key]);
+    const status=r.throughStatus?summarize([decision,r.throughStatus]):decision;
+    return {...r,status:status==="Not yet inspected"?"Pending":status};
+  });
+  return {p,subtitle,results,overall:summarize(results.map(r=>r.status==="Pending"?"Pending":r.status))};
+}
+
+export async function makeWorkbook(_template,report,plan,inspection,zipLibrary=globalThis.JSZip){
+  const {p,subtitle,results,overall}=workbookData(report,plan,inspection);
+  const ids=identity.map(k=>p[k]??"");
+
+  // Form 1 · Part number accountability
+  const f1=new Sheet("Form 1",[30,30,30,30]);
+  f1.add([["Form 1   ·   Part number accountability",S.title,4]],{height:26});
+  f1.add([[subtitle,S.subtitle,4]],{height:18});
+  fields(f1,["1. Part number","2. Part name","3. Serial / lot number","4. FAIR identifier"],ids);
+  fields(f1,["5. Part revision","6. Drawing number","7. Drawing revision","8. Additional changes"],partFields.slice(0,4).map(k=>p[k]));
+  fields(f1,["9. Manufacturing process reference","10. Organization name","11. Supplier code","12. Purchase order"],partFields.slice(4).map(k=>p[k]));
+  fields(f1,["13. Detail / assembly","14. Full / partial FAI","Baseline part and revision","Reason for FAI"],[p.kind||"Detail",p.scope,p.baseline,p.reason]);
+  f1.add([["Assembly index   ·   applicable to assemblies",S.section,4]],{height:20});
+  f1.add(componentFields.map(l=>[l.replace(/^(\d+)\. /,"$1. "),S.label]),{height:18});
+  const components=indexedParts(report);
+  for(const c of components.length?components:[[],[]])f1.add([0,1,2,3].map(i=>[c[i]??"",S.value]));
+  fields(f1,["19. Does the FAIR contain documented nonconformances?"],[p.nc],[4]);
+  fields(f1,["20. Verified by","21. Verification date","22. Reviewed / approved by","23. Review date"],["Verified by","Verification date","Reviewed / approved by","Review date"].map(k=>p[k]));
+  f1.add([["Inspection status",S.section,4]],{height:20});
+  f1.add([[overall,overallStyle(overall),4]],{height:22});
+
+  // Form 2 · Product accountability
+  const f2=new Sheet("Form 2",[28,30,14,24,24,26]);
+  f2.add([["Form 2   ·   Product accountability",S.title,6]],{height:26});
+  f2.add([[subtitle,S.subtitle,6]],{height:18});
+  fields(f2,["1. Part number","2. Part name","3. Serial / lot number","4. FAIR identifier"],ids,[1,1,2,2]);
+  f2.add(["5. Material or process","6. Specification","7. Code","8. Supplier","9. Customer approval verification","10. Certificate of conformance"].map(l=>[l,S.label]),{height:30});
+  const products=report.products.filter(r=>r.some(v=>String(v??"").trim()));
+  for(const r of products.length?products:[[],[]])f2.add(materialFields.map((_,j)=>[r[j]??"",S.value]));
+  fields(f2,["11. Functional test procedure","12. Acceptance report"],[report.tests?.["Functional test procedure"],report.tests?.["Acceptance report"]],[3,3]);
+  fields(f2,["13. Comments"],[report.tests?.Comments],[6]);
+
+  // Form 3 · Characteristic accountability (AS9102 fields 5–12)
+  const f3=new Sheet("Form 3",[8,34,15,38,20,18,16,34]);
+  f3.add([["Form 3   ·   Characteristic accountability, verification and compatibility evaluation",S.title,8]],{height:26});
+  f3.add([[subtitle,S.subtitle,8]],{height:18});
+  fields(f3,["1. Part number","2. Part name","3. Serial / lot number","4. FAIR identifier"],ids,[2,2,2,2]);
+  f3.add(["5. Char. no.","6. Reference location","7. Characteristic designator","8. Requirement","9. Results","10. Designed / qualified tooling","11. Nonconformance number","12. Additional data / comments"].map(l=>[l,S.label]),{height:30});
+  f3.freeze=f3.rows.length+1;
+  const oneSheet=plan.rows.every(r=>(r.sheet||1)===1);
+  for(const r of results){
+    const comments=[r.comments,r.throughStatus&&"Through hole: "+(r.throughStatus==="Not yet inspected"?"Pending":r.throughStatus)].filter(Boolean).join(" / ");
+    f3.add([[r.balloon,S.center],[oneSheet?r.location.replace(/^Sheet 1 · /,""):r.location],[r.designator],[r.requirement],[r.result,statusStyle(r.status)],[r.tool],[r.nc],[comments]]);
+  }
+  f3.add([["Field 9 shows each reading with its decision: green Pass, red Fail, grey not yet inspected. Generated by Gaugebook.",S.note,8]],{height:18});
+
+  const sheets=[f1,f2,f3],zip=new zipLibrary();
+  zip.file("[Content_Types].xml",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")}</Types>`);
+  zip.file("_rels/.rels",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`);
+  zip.file("xl/workbook.xml",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><bookViews><workbookView activeTab="0"/></bookViews><sheets>${sheets.map((s,i)=>`<sheet name="${s.name}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join("")}</sheets></workbook>`);
+  zip.file("xl/_rels/workbook.xml.rels",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((_,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join("")}<Relationship Id="rId${sheets.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`);
+  zip.file("xl/styles.xml",STYLES);
+  sheets.forEach((s,i)=>zip.file(`xl/worksheets/sheet${i+1}.xml`,s.xml()));
   return zip.generateAsync({type:"uint8array",compression:"DEFLATE"});
 }

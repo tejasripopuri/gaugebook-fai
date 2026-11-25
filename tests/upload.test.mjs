@@ -16,12 +16,15 @@ test("custom exports expand past the sample rows and use the uploaded part",asyn
   const plan={custom:true,name:"Housing.pdf",rows:[{id:1,sheet:2,name:"Hole",source:"Ø.250 ±.002",unit:"in",bounds:[.248,.252],repeats:Array.from({length:60},(_,i)=>"Hole "+(i+1))}]};
   const state={answers:{"1-59":".260"}},report=initialReport(plan);
   assert.equal(resultRows(plan,state,report).at(-1).result,".260 in · Fail");
-  const bytes=await makeWorkbook(fs.readFileSync(new URL("../public/fai-forms.xlsx",import.meta.url)),report,plan,state,JSZip);
+  const bytes=await makeWorkbook(null,report,plan,state,JSZip);
   const zip=await JSZip.loadAsync(bytes);
   for(const i of [1,2,3]){
     const xml=await zip.file("xl/worksheets/sheet"+i+".xml").async("string");
     assert.doesNotMatch(xml,/SMP-1001|anodize|Adapter Plate/i);
-    if(i===3){assert.match(xml,/r="E67"[^>]*><x:v>0.26/);assert.match(xml,/Sheet 2 · Hole · Hole 60/);}
+    if(i===3){
+      assert.match(xml,/\.260 in · Fail/);assert.match(xml,/Sheet 2 · Hole · Hole 60/);
+      assert.equal((xml.match(/Sheet 2 · Hole · Hole \d+/g)||[]).length,60);
+    }
   }
 });
 
