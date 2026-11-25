@@ -1,4 +1,4 @@
-import {propose,drawingAngleDefault,drawingLinearDefaults,definesGeneralTolerance,withGeneralTolerance} from "./callouts.mjs";
+import {propose,drawingAngleDefault,drawingLinearDefaults,definesGeneralTolerance,withGeneralTolerance,dimensionKind,basicValuesFromNotes} from "./callouts.mjs";
 import {anchorFor,inside} from "./drawing-areas.mjs";
 
 const number=/(?:\d+[.,]?\d*|[.,]\d+)/;
@@ -24,10 +24,18 @@ function place(point,areas,used){
   }
   return point;
 }
-export function generalRows(lines,areas,width,height){
+// boxed (optional): bbox => true when the text is drawn inside a box (a basic dimension).
+export function generalRows(lines,areas,width,height,boxed){
   const rows=[],used=[];
   const angular=drawingAngleDefault(lines);
   const general=drawingLinearDefaults(lines);
+  const basicValues=basicValuesFromNotes(lines);
+  // Basic and reference dimensions keep just the dimension; plain ones take the title-block tolerance.
+  const classify=(p,line)=>{
+    if(p.bounds)return p;
+    const kind=dimensionKind(p.source,{basicValues,boxed:()=>!!boxed?.(line.bbox)});
+    return kind?{...p,basic:true,basicReason:kind}:withGeneralTolerance(p,general);
+  };
   const sideHeadings=lines.filter(l=>/^(?:feature requirements|feature center locations|inspection notes|general notes|hole (?:table|chart)|coordinates|bill of materials|revision history)\s*:?$/i.test(l.text.trim()));
   for(const line of lines){
     const text=line.text.trim(),point=center(line,width,height);
@@ -39,7 +47,7 @@ export function generalRows(lines,areas,width,height){
     const remoteTag=tag&&!inside(areas,point);
     const inPanel=sideHeadings.some(h=>line.bbox.y0>=h.bbox.y0&&line.bbox.x0>=h.bbox.x0-width*.012&&line.bbox.x0<h.bbox.x0+width*.34);
     const proposals=propose(tag?text.slice(tag[0].length):text,prose?null:angular)
-      .map(p=>prose||inPanel?p:withGeneralTolerance(p,general));
+      .map(p=>prose||inPanel?p:classify(p,line));
     for(const p of proposals){
       const anchor=isDim&&!prose&&!remoteTag&&!inPanel?anchorFor(areas,...point):null;
       const xy=anchor?place(anchor,areas,used):point;

@@ -11,7 +11,8 @@ test("report preserves separate occurrences, evidence and failed readings",()=>{
   const rows=resultRows(plan,{answers:{"12-2":".290"},evidence:{12:"Inspection record 1"}},r);
   const row=rows.find(e=>e.key==="12-2");
   assert.equal(row.nc,"NCR-123");assert.match(row.result,/Fail/);assert.match(row.comments,/record 1/);
-  assert.equal(rows.filter(e=>e.result.startsWith("Pending")).length,35);
+  assert.equal(rows.filter(e=>e.result.startsWith("Pending")).length,31);
+  assert.equal(rows.filter(e=>e.result.startsWith("BASIC")).length,4);
   assert.ok(plan.rows.every(r=>r.source.length>0));
   assert.equal(rows.length,36);
   assert.ok(rows.every(r=>! /^(?:4X )?THRU$/.test(r.requirement)));
