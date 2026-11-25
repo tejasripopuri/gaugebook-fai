@@ -4,3 +4,5 @@
 .formnav{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0}.formnav button[aria-current=true]{background:#ccedc8;color:#153e38}.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px;margin:14px 0}.formgrid label{font-size:.9rem}.formgrid input,.formgrid select{display:block;margin-top:5px}.reportrow{padding:12px 0;border-top:1px solid #d5e0db}.reportrow summary{font-weight:500}.card h3{margin-bottom:6px}
 
 .view-area,.area-corner{position:absolute;pointer-events:none}.view-area{border:1px dashed #43816f}.area-corner{width:9px;height:9px;background:#c46b10;transform:translate(-50%,-50%);border-radius:50%}
+
+.hint{font-size:.85rem;color:#48615c;margin:8px 0 0}

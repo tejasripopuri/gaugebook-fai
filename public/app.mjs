@@ -28,6 +28,8 @@ function summary() {
   el("summary").className=result.toLowerCase();
   el("counts").textContent=(pass+fail)+" of "+states.length+" results entered　·　"+pass+" pass　·　"+fail+" fail　·　"+(states.length-pass-fail)+" pending";
   el("bar").style.width=(states.length?(pass+fail)/states.length*100:0)+"%";
+  const left=states.length-pass-fail;
+  el("pending").disabled=!left;el("pending").textContent=left?"Next pending ("+left+")":"All results entered";
   plan.rows.forEach((r,j)=>{
     const s=summarize(r.repeats.map((_,i)=>judge(r,answers[r.id+"-"+i])));
     el("select").options[j].textContent=r.balloon+". "+r.name+" — "+s;
@@ -76,13 +78,33 @@ function choose(i) {
       result.className=state.toLowerCase();
     }
     input.oninput=()=>{answers[id]=input.value;show();save();summary();};
+    input.onkeydown=e=>{if(e.key==="Enter"&&!e.isComposing){e.preventDefault();advance(input);}};
     show();field.append(label,input,result);box.append(field);
   });
   box.append(crop,output);
   const label=node("label","Evidence or inspection note");label.htmlFor="evidence";
   const input=node("input");input.id="evidence";input.placeholder="Certificate, report or observation";input.value=evidence[r.id]||"";
   input.oninput=()=>{evidence[r.id]=input.value;save();};box.append(label,input);
+  input.onkeydown=e=>{if(e.key==="Enter"&&!e.isComposing){e.preventDefault();advance(input);}};
 }
+// Fast entry: Enter moves to the next result, then to the next characteristic.
+const readingFields=()=>[...el("entry").querySelectorAll("[id^=reading-]")];
+function focusField(field){field?.focus();if(field?.select)field.select();}
+function advance(from){
+  const fields=readingFields(),next=fields[fields.indexOf(from)+1];
+  if(next)return focusField(next);
+  if(index<plan.rows.length-1){choose(index+1);focusField(readingFields()[0]);}
+  else el("pending").focus();
+}
+const isPending=(r,j)=>judge(r,answers[r.id+"-"+j])==="Pending";
+el("pending").onclick=()=>{
+  for(let step=1;step<=plan.rows.length;step++){
+    const i=(index+step)%plan.rows.length,r=plan.rows[i];
+    const j=r.repeats.findIndex((_,j)=>isPending(r,j));
+    if(j<0)continue;
+    choose(i);focusField(document.getElementById("reading-"+r.id+"-"+j));return;
+  }
+};
 async function load(file) {
   const nextDrawing=await readDrawing(file);
   const nextPlan=await (await fetch("reviewed-plan.json")).json();

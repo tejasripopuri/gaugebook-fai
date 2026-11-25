@@ -1,3 +1,4 @@
+import {repairOcrText} from "./callouts.mjs";
 import {getDocument,GlobalWorkerOptions,Util} from "./vendor/pdf.min.mjs";
 import {matchesRaster} from "./vision.mjs";
 GlobalWorkerOptions.workerSrc=new URL("./vendor/pdf.worker.min.mjs",import.meta.url).href;
@@ -109,7 +110,7 @@ export async function dimensionLines(canvas){
     const overlaps=upright.some(({bbox:q,text})=>text.trim()===line.text.trim()&&q.x0<box.x1&&q.x1>box.x0&&q.y0<box.y1&&q.y1>box.y0);
     if(!overlaps)upright.push({...line,bbox:box});
   }
-  return upright;
+  return upright.map(line=>({...line,text:repairOcrText(line.text)}));
 }
 
 // Combine text fragments on one dimension line without joining distant table columns.

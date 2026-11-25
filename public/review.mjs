@@ -88,6 +88,7 @@ function redraw(){
       }
       input.oninput=()=>{const latest=state();(latest.answers??={})[k]=input.value;localStorage.setItem(key,JSON.stringify(latest));show();updateSummary();};
       input.id="result-"+k;label.htmlFor=input.id;
+      input.onkeydown=e=>{if(e.key==="Enter"&&!e.isComposing){e.preventDefault();advance(row.id,i);}};
       const field=document.createElement("div");field.className="field";show();field.append(label,input,result);el("results").append(field);
     });
   }
@@ -101,6 +102,43 @@ function editingRequirement(){
 }
 el("requirement").oninput=editingRequirement;el("method").onchange=editingRequirement;
 el("rows").onchange=e=>{selected=Number(e.target.value);redraw();};
+// Fast entry: Enter confirms the characteristic if needed, then moves to the next result,
+// then to the next characteristic on this sheet. "Next pending" jumps to the next gap.
+function focusResult(rowId,i){
+  const f=document.getElementById("result-"+rowId+"-"+i);
+  if(f&&!f.disabled){f.focus();f.select?.();return true;}
+  return false;
+}
+function advance(rowId,i){
+  let row=plan.rows.find(r=>r.id===rowId);
+  if(row&&!row.confirmed){
+    el("editor").requestSubmit();
+    row=plan.rows.find(r=>r.id===rowId);
+    if(!row?.confirmed)return;
+  }
+  if(focusResult(rowId,i+1))return;
+  const rows=onPage(),next=rows[rows.indexOf(row)+1];
+  if(next){selected=next.id;redraw();focusResult(next.id,0)||el("requirement").focus();}
+  else el("pending").focus();
+}
+function pendingIn(r){
+  const answers=state().answers||{};
+  if(!r.confirmed)return 0;
+  const j=r.repeats.findIndex((_,i)=>resultStatus(r,answers[r.id+"-"+i]??"")==="Pending");
+  return j<0?null:j;
+}
+el("pending").onclick=()=>{
+  const rows=onPage(),start=rows.findIndex(r=>r.id===selected);
+  for(let step=1;step<=rows.length;step++){
+    const r=rows[(start+step)%rows.length],j=pendingIn(r);
+    if(j===null)continue;
+    selected=r.id;redraw();
+    if(!r.confirmed){el("requirement").focus();message("Confirm this characteristic, then enter its results.");}
+    else focusResult(r.id,j);
+    return;
+  }
+  message("All results on this sheet are entered.");
+};
 el("cancel").onclick=()=>{placing=null;redraw();};
 el("attach").onclick=()=>{placing=Number(el("unused").value);message("Click the corresponding drawing feature.");redraw();};
 el("paper").onclick=async e=>{
