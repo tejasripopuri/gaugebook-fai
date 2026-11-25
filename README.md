@@ -45,6 +45,8 @@ The source tree contains the running app, test suite, CI workflow and example fo
 | `GET /api/drawings` · `GET`/`POST /api/drawings?id=<sha256>` | List, download and upload drawings (PDF, PNG, JPEG up to 100 MB; checked against their hash and file type) |
 | `GET /api/health` | Health check |
 
+The pages list every script they load as `<link rel="modulepreload">`, so the browser fetches them all at once instead of one import at a time. This made pages usable in about 0.4 s instead of 1.1 s. After adding or removing an `import`, run `node scripts/update-preloads.mjs`. `npm test` fails if a list is out of date.
+
 Known limits:
 - There is no password reset yet.
 - If the same inspection is edited on two devices at once, the last save wins. The earlier value is kept in `audit_events`.
