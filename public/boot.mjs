@@ -177,40 +177,6 @@ async function retryDrawings(localFile) {
 
 window.gaugebookSync = { uploadDrawing, downloadDrawing, retryDrawings, flush };
 
-// ---------- "Your drawings" list on the workspace page ----------
-async function listDrawings() {
-  const byId = new Map();
-  try {
-    const res = await api("api/drawings");
-    if (res.ok) for (const d of (await res.json()).drawings) byId.set(d.id, d.name);
-  } catch {}
-  for (let i = 0; i < ls.length; i++) {
-    const m = /^gaugebook-upload-([0-9a-f]{64})-plan$/.exec(ls.key(i) || "");
-    if (!m) continue;
-    let name = byId.get(m[1]) || "Uploaded drawing";
-    try { name = JSON.parse(ls.getItem(m[0]))?.name || name; } catch {}
-    byId.set(m[1], name);
-  }
-  const drawings = [...byId].map(([id, name]) => ({ id, name }));
-  if (!drawings.length) return;
-  drawings.sort((a, b) => a.name.localeCompare(b.name));
-  const section = document.createElement("section");
-  section.className = "card";
-  section.style.marginBottom = "16px";
-  const h = document.createElement("h2");
-  h.textContent = "Your uploaded drawings";
-  const ul = document.createElement("ul");
-  for (const d of drawings) {
-    const li = document.createElement("li"), a = document.createElement("a");
-    a.href = "review.html?drawing=" + d.id;
-    a.textContent = d.name;
-    li.append(a);
-    ul.append(li);
-  }
-  section.append(h, ul);
-  document.querySelector("main #message")?.after(section);
-}
-
 // ---------- start ----------
 // The server copy, after sending any changes made on this device first.
 async function pull() {
@@ -324,7 +290,6 @@ if (main) main.inert = true;
 document.addEventListener("gaugebook:ready", ready, { once: true });
 
 if (await start()) {
-  if (entry === "app.mjs") listDrawings().catch(() => {});
   if (entry && /^[\w-]+\.mjs$/.test(entry)) await import("./" + entry).finally(ready);
   else ready();
   // Fix copy that described browser-only storage.
