@@ -86,6 +86,10 @@ class Sheet{
   }
 }
 
+// Blank rows left for hand-written entries, as on the AS9102 forms (the tables grow if more are filled in).
+export const BLANK_ROWS={assemblyIndex:30,materials:15,testReports:5};
+const padded=(rows,min)=>[...rows,...Array.from({length:Math.max(0,min-rows.length)},()=>[])];
+
 const statusStyle=s=>s==="Pass"?S.pass:s==="Fail"?S.fail:S.pending;
 const overallStyle=s=>s==="Pass"?S.statusPass:s==="Fail"?S.statusFail:S.statusPending;
 // A row of field labels followed by a row of their values.
@@ -121,7 +125,7 @@ export async function makeWorkbook(_template,report,plan,inspection,zipLibrary=g
   f1.add([["Assembly index   ·   applicable to assemblies",S.section,4]],{height:20});
   f1.add(componentFields.map(l=>[l.replace(/^(\d+)\. /,"$1. "),S.label]),{height:18});
   const components=indexedParts(report);
-  for(const c of components.length?components:[[],[]])f1.add([0,1,2,3].map(i=>[c[i]??"",S.value]));
+  for(const c of padded(components,BLANK_ROWS.assemblyIndex))f1.add([0,1,2,3].map(i=>[c[i]??"",S.value]),{height:17});
   fields(f1,["19. Does the FAIR contain documented nonconformances?"],[p.nc],[4]);
   fields(f1,["20. Verified by","21. Verification date","22. Reviewed / approved by","23. Review date"],["Verified by","Verification date","Reviewed / approved by","Review date"].map(k=>p[k]));
   f1.add([["Inspection status",S.section,4]],{height:20});
@@ -134,8 +138,10 @@ export async function makeWorkbook(_template,report,plan,inspection,zipLibrary=g
   fields(f2,["1. Part number","2. Part name","3. Serial / lot number","4. FAIR identifier"],ids,[1,1,2,2]);
   f2.add(["5. Material or process","6. Specification","7. Code","8. Supplier","9. Customer approval verification","10. Certificate of conformance"].map(l=>[l,S.label]),{height:30});
   const products=report.products.filter(r=>r.some(v=>String(v??"").trim()));
-  for(const r of products.length?products:[[],[]])f2.add(materialFields.map((_,j)=>[r[j]??"",S.value]));
-  fields(f2,["11. Functional test procedure","12. Acceptance report"],[report.tests?.["Functional test procedure"],report.tests?.["Acceptance report"]],[3,3]);
+  for(const r of padded(products,BLANK_ROWS.materials))f2.add(materialFields.map((_,j)=>[r[j]??"",S.value]),r.length?{}:{height:17});
+  f2.add([["11. Functional test procedure",S.label,3],["12. Acceptance report",S.label,3]],{height:18});
+  const tests=[[report.tests?.["Functional test procedure"],report.tests?.["Acceptance report"]]];
+  for(const [a,b] of padded(tests,BLANK_ROWS.testReports))f2.add([[a??"",S.value,3],[b??"",S.value,3]]);
   fields(f2,["13. Comments"],[report.tests?.Comments],[6]);
 
   // Form 3 · Characteristic accountability (AS9102 fields 5–12)

@@ -38,3 +38,17 @@ test("Form 3 is strictly AS9102 fields 5-12 with coloured results and a frozen h
   assert.doesNotMatch(f3,/THRU Pending/);
   assert.match(f3,/Through hole: Pending/);
 });
+
+test("Forms 1 and 2 leave blank rows for hand-written entries",async()=>{
+  const {sheet}=await build(initialReport(),{});
+  const [f1,f2]=await Promise.all([1,2].map(sheet));
+  const rowsBetween=(xml,from,to)=>{
+    const a=Number(xml.match(new RegExp('<row r="(\\d+)"[^>]*>(?:(?!</row>)[\\s\\S])*'+from))[1]);
+    const b=Number(xml.match(new RegExp('<row r="(\\d+)"[^>]*>(?:(?!</row>)[\\s\\S])*'+to))[1]);
+    return b-a-1;
+  };
+  assert.equal(rowsBetween(f1,"15\\. Part number","19\\. Does the FAIR"),30);          // assembly index rows
+  assert.equal(rowsBetween(f2,"5\\. Material or process","11\\. Functional test"),15);    // material / process rows
+  assert.equal(rowsBetween(f2,"11\\. Functional test","13\\. Comments"),5);               // test procedure / report rows
+  assert.match(f2,/6061-T651 aluminum plate/);                                         // filled rows come first
+});
