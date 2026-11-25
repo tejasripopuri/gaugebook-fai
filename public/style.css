@@ -14,3 +14,5 @@
 .legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-size:.85rem;color:#48615c}
 .legend .dot{display:inline-block;width:.8em;height:.8em;border-radius:50%;margin-right:-8px;vertical-align:-1px}
 .dot.pass{background:#1d7a4c}.dot.fail{background:#b3261e}.dot.pending{background:#66756f}.dot.review{background:#b26b00}
+
+.pin{touch-action:none;cursor:grab}.pin.dragging{cursor:grabbing;opacity:.85;z-index:5;transition:none}
