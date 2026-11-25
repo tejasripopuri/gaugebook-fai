@@ -23,7 +23,10 @@ test("untoleranced dimensions take the title-block tolerance",()=>{
   const d=drawingLinearDefaults(lines([".XX ±.01  .XXX ±.005"]));
   const apply=t=>withGeneralTolerance(propose(t)[0],d);
   assert.deepEqual(apply("2.000").bounds,[1.995,2.005]);
-  assert.equal(apply("2.000").source,"2.000 (.XXX ±.005 title block)");
+  assert.equal(apply("2.000").source,"2.000 ±.005");
+  assert.equal(apply("2.000").generalTolerance,".XXX ±.005");
+  assert.equal(apply("4X Ø.281 THRU").source,"Ø.281 ±.005 THRU");
+  assert.equal(apply("3.00").source,"3.00 ±.01");
   assert.deepEqual(apply("3.00").bounds,[2.99,3.01]);
   assert.deepEqual(apply("4X Ø.281 THRU").bounds,[.276,.286]);
   assert.deepEqual(apply("R.250").bounds,[.245,.255]);

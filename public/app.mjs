@@ -64,7 +64,7 @@ function choose(i) {
     box.append(checks);
   }
 
-  box.append(node("p",r.basic?r.basicNote:r.bounds?"Acceptance range "+r.bounds.join(" to ")+" "+r.unit+" (inclusive)":"Verify against the drawing and supporting evidence."));
+  box.append(node("p",r.basic?r.basicNote:r.bounds?"Acceptance range "+r.bounds.join(" to ")+" "+r.unit+" (inclusive)"+(r.generalTolerance?" · tolerance from the title block ("+r.generalTolerance+")":""):"Verify against the drawing and supporting evidence."));
   r.repeats.forEach((occ,j)=>{
     const id=r.id+"-"+j, field=node("div",undefined,"field"), label=node("label","Result"+(r.repeats.length>1?" · "+occ:"")+(r.unit?" ("+r.unit+")":""));
     const input=node(r.bounds||r.basic?"input":"select"), result=node("small");

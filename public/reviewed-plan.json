@@ -442,95 +442,103 @@
     },
     {
       "id": 26,
-      "name": "Hole spacing, horizontal (basic)",
-      "source": "5.000 BASIC (note 5)",
+      "name": "Hole spacing, horizontal",
+      "source": "5.000 ±.005",
       "xy": [
         593,
         172
       ],
-      "bounds": null,
-      "basic": true,
+      "bounds": [
+        4.995,
+        5.005
+      ],
       "unit": "in",
       "repeats": [
         "Result"
       ],
-      "category": "Basic dimension",
+      "category": "Dimension",
       "crop": [
         524,
         164,
         46,
         18
       ],
-      "basicNote": "BASIC per note 5: a theoretically exact dimension with no ± tolerance; the title-block tolerance does not apply. Its location is checked by the hole position tolerance (⌖ Ø.010 A B C). Record the measured value for information."
+      "generalTolerance": ".XXX ±.005"
     },
     {
       "id": 27,
-      "name": "Hole spacing, vertical (basic)",
-      "source": "3.000 BASIC (note 5)",
+      "name": "Hole spacing, vertical",
+      "source": "3.000 ±.005",
       "xy": [
         1003,
         476
       ],
-      "bounds": null,
-      "basic": true,
+      "bounds": [
+        2.995,
+        3.005
+      ],
       "unit": "in",
       "repeats": [
         "Result"
       ],
-      "category": "Basic dimension",
+      "category": "Dimension",
       "crop": [
         971,
         454,
         20,
         44
       ],
-      "basicNote": "BASIC per note 5: a theoretically exact dimension with no ± tolerance; the title-block tolerance does not apply. Its location is checked by the hole position tolerance (⌖ Ø.010 A B C). Record the measured value for information."
+      "generalTolerance": ".XXX ±.005"
     },
     {
       "id": 28,
-      "name": "Bore centre from bottom edge (basic)",
-      "source": "2.000 BASIC (note 5)",
+      "name": "Bore centre from bottom edge",
+      "source": "2.000 ±.005",
       "xy": [
         111,
         558
       ],
-      "bounds": null,
-      "basic": true,
+      "bounds": [
+        1.995,
+        2.005
+      ],
       "unit": "in",
       "repeats": [
         "Result"
       ],
-      "category": "Basic dimension",
+      "category": "Dimension",
       "crop": [
         101,
         581,
         20,
         44
       ],
-      "basicNote": "BASIC per note 5: a theoretically exact dimension with no ± tolerance; the title-block tolerance does not apply. The bore centre has no position tolerance on this sheet: ask engineering how it is to be accepted. Record the measured value for information."
+      "generalTolerance": ".XXX ±.005"
     },
     {
       "id": 29,
-      "name": "Bore centre from left edge (basic)",
-      "source": "3.000 BASIC (note 5)",
+      "name": "Bore centre from left edge",
+      "source": "3.000 ±.005",
       "xy": [
         356,
         801
       ],
-      "bounds": null,
-      "basic": true,
+      "bounds": [
+        2.995,
+        3.005
+      ],
       "unit": "in",
       "repeats": [
         "Result"
       ],
-      "category": "Basic dimension",
+      "category": "Dimension",
       "crop": [
         334,
         769,
         44,
         18
       ],
-      "basicNote": "BASIC per note 5: a theoretically exact dimension with no ± tolerance; the title-block tolerance does not apply. The bore centre has no position tolerance on this sheet: ask engineering how it is to be accepted. Record the measured value for information."
+      "generalTolerance": ".XXX ±.005"
     },
     {
       "id": 19,
@@ -695,7 +703,7 @@
     }
   ],
   "references": [
-    "Basic locations per note 5 are ballooned for traceability (hole spacing 5.000 and 3.000; bore centre 3.000 from the left and 2.000 from the bottom). They have no independent ± limits, so readings are recorded for information only. The hole pattern is controlled by its position tolerance; the bore centre has no explicit positional acceptance zone on this sheet, so request engineering clarification before production use.",
+    "Note 5 calls the 5.000, 3.000, 2.000 and 3.000 locations basic. At the owner's direction they are inspected to the title-block tolerance (.XXX ±.005), balloons 17–20. The bore centre has no explicit positional acceptance zone on this sheet; request engineering clarification before production use.",
     "6. INTERPRET PER ASME Y14.5-2018.",
     "8. FICTIONAL PART FOR TRAINING AND SOFTWARE TESTING ONLY.",
     "Datum A: underside. B: left edge. C: bottom edge in top view. Establish the datum frame for the applicable GD&T checks.",

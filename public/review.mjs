@@ -73,6 +73,8 @@ function redraw(){
       crop.getContext("2d").drawImage(canvas,x,y,crop.width,crop.height,0,0,crop.width,crop.height);
     }
     el("requirement").value=row.source;
+    el("tolSource").hidden=!row.generalTolerance;
+    el("tolSource").textContent=row.generalTolerance?"Tolerance taken from the title block ("+row.generalTolerance+"). Change it here if this dimension needs a different one.":"";
     const attribute=!row.bounds&&(row.method==="attribute"||row.confirmed);
     el("method").value=attribute?"attribute":"numeric";
     const data=state();
@@ -168,7 +170,7 @@ el("editor").onsubmit=e=>{
       keys.forEach(k=>delete latest.answers[k]);localStorage.setItem(key,JSON.stringify(latest));
     }
   }
-  Object.assign(r,{name:r.name===r.source||!r.source?source:r.name,source,method,bounds,confirmed:true});
+  Object.assign(r,{name:r.name===r.source||!r.source?source:r.name,source,method,bounds,confirmed:true,generalTolerance:source===r.source?r.generalTolerance:undefined});
   changed();redraw();message("Characteristic confirmed.");
 };
 el("delete").onclick=()=>{const r=active();if(!confirm("Delete this balloon and renumber the remaining entries?"))return;
@@ -199,6 +201,7 @@ async function scan(){
       const row=add(proposal,x,y);
       row.name=proposal.name||row.name;row.unit=proposal.unit||"";
       row.unplaced=off;row.sourceBox=proposal.sourceBox;
+      if(proposal.generalTolerance)row.generalTolerance=proposal.generalTolerance;
       if(off&&plan.rows.includes(row)){plan.rows.splice(plan.rows.indexOf(row),1);plan.offView.push(row);}
     }
     const layout=practice||await matchPracticeImage(canvas);
