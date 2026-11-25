@@ -11,16 +11,15 @@ test("matching preserves weak JPEG noise and rejects a changed glyph",()=>{
   for(let i=0;i<4;i++) b[i*4]=0;
   assert.equal(matchesRaster(a,b,32,32),false);
 });
-const expected=[[5.99,6.01],[3.99,4.01],[.495,.505],[.24,.26],[1.250,1.252],null,[1.745,1.755],[.120,.130],[.025,.035],[44.5,45.5],[0,.003],[.276,.286],null,[0,.010],[.370,.380],[.990,1.010],[.740,.760],[0,.002],null,null,null,null,null,null,[0,63],[.005,.015],[.005,.015],null,[.11,.13]];
+const expected=[[5.99,6.01],[3.99,4.01],[.495,.505],[.24,.26],[1.250,1.252],null,[1.745,1.755],[.120,.130],[.025,.035],[44.5,45.5],[0,.003],[.276,.286],null,[0,.010],[.370,.380],[.990,1.010],[.740,.760],[0,.002],[4.995,5.005],[2.995,3.005],[1.995,2.005],[2.995,3.005],null,null,[0,63],[.005,.015],[.005,.015],null,[.11,.13]];
 test("reviewed drawing identity and register",()=>{
   const pdf=readFileSync(new URL("../public/sample.pdf",import.meta.url));
   assert.equal(createHash("sha256").update(pdf).digest("hex"),digest);
   assert.deepEqual(rows.map(r=>r.bounds),expected);
   assert.deepEqual(rows.filter(r=>r.repeats.length===4).map(r=>r.id),[4,12,13,14]);
-  assert.equal(rows.filter(r=>!r.basic).flatMap(r=>r.repeats).length,37);
-  // Note 5: the four basic locations are ballooned for information, never with ± limits.
-  assert.deepEqual(rows.filter(r=>r.basic).map(r=>r.source),["5.000 BASIC (note 5)","3.000 BASIC (note 5)","2.000 BASIC (note 5)","3.000 BASIC (note 5)"]);
-  assert.ok(rows.filter(r=>r.basic).every(r=>r.bounds===null&&r.category==="Basic dimension"&&r.basicNote));
+  assert.equal(rows.flatMap(r=>r.repeats).length,41);
+  // Note 5 locations are inspected to the title-block tolerance (.XXX ±.005), at the owner's direction.
+  assert.deepEqual(rows.filter(r=>r.generalTolerance).map(r=>r.source),["5.000 ±.005","3.000 ±.005","2.000 ±.005","3.000 ±.005"]);
   assert.match(references.join(" "),/Y14.5-2018/);
   assert.ok(rows.every(r=>r.crop.length===4));
 });

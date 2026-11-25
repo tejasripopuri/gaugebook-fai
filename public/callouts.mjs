@@ -86,20 +86,20 @@ function generalRule(m){
   const tol=Number(m[4]);
   if(!(tol>0))return null;
   const label=decimals?(m[2]&&m[1]?"X":"")+"."+"X".repeat(decimals):"X";
-  return {decimals,tol,label:label+" ±"+m[4]};
+  return {decimals,tol,tolText:m[4],label:label+" ±"+m[4]};
 }
 export function drawingLinearDefaults(lines){
   const defaults=new Map();
   for(const {text} of lines)for(const m of text.matchAll(generalPattern)){
     const rule=generalRule(m);
-    if(rule)defaults.set(rule.decimals,{tol:rule.tol,label:rule.label});
+    if(rule)defaults.set(rule.decimals,{tol:rule.tol,tolText:rule.tolText,label:rule.label});
   }
   return defaults;
 }
 export const definesGeneralTolerance=text=>[...text.matchAll(generalPattern)].some(m=>generalRule(m));
 
-// A dimension printed without its own tolerance takes the title-block tolerance for its number
-// of decimal places. Reference dimensions (REF or in brackets) are not inspected and stay as they are.
+// A dimension printed without its own tolerance (basic ones included) takes the title-block
+// tolerance for its number of decimal places. Reference dimensions (REF or in brackets) are not inspected and stay as they are.
 export function withGeneralTolerance(proposal,defaults){
   if(proposal.bounds||proposal.unit==="°"||!defaults?.size)return proposal;
   const source=proposal.source.trim();
@@ -109,6 +109,9 @@ export function withGeneralTolerance(proposal,defaults){
   const rule=defaults.get((m[2]??m[3]??"").length);
   if(!rule)return proposal;
   const nominal=Number(m[1]);
-  return {...proposal,source:source+" ("+rule.label+" title block)",generalTolerance:rule.label,
+  // "2.000" -> "2.000 ±.005": the tolerance is written in, and its origin kept in generalTolerance.
+  const at=source.indexOf(m[1]);
+  const written=source.slice(0,at+m[1].length)+" ±"+(rule.tolText??String(rule.tol))+source.slice(at+m[1].length);
+  return {...proposal,source:written,generalTolerance:rule.label,
     bounds:[nominal-rule.tol,nominal+rule.tol].map(x=>Number(x.toFixed(10)))};
 }
