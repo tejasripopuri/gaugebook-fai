@@ -112,9 +112,8 @@ document.querySelector("#one").onclick=()=>download([active]);document.querySele
 
 document.querySelector("#xlsx").onclick=async()=>{
   try {
-    const response=await fetch("fai-forms.xlsx");if(!response.ok)throw Error("Workbook template unavailable");
     const {makeWorkbook}=await import("./report-excel.mjs");
-    const bytes=await makeWorkbook(await response.arrayBuffer(),report,plan,read(key,{}));
+    const bytes=await makeWorkbook(null,report,plan,read(key,{}));
     const url=URL.createObjectURL(new Blob([bytes],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));
     const a=document.createElement("a");a.href=url;a.download=(report.part["Part number"]||plan.name||"Inspection")+"-FAI-Forms.xlsx";a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);
     notice.textContent="Excel workbook generated with three editable worksheets.";
