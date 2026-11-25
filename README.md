@@ -53,14 +53,15 @@ Known limits:
 - There is no password reset yet.
 - If the same inspection is edited on two devices at once, the last save wins. The earlier value is kept in `audit_events`.
 
-## 5. Deploy on a Hostinger VPS
+## 5. Deploy on a server (Hostinger VPS or Oracle Cloud Always Free)
+The same installer works on any fresh Ubuntu 22.04/24.04 server, x86-64 or ARM64. That includes a Hostinger VPS and a free Oracle Cloud Always Free VM: on Oracle, also allow TCP 80 and 443 in the VCN security list; the installer removes Oracle's built-in block-all firewall rules itself. On Oracle or other servers, run the install command with `sudo bash` as shown below.
 The app runs on the VPS as three Docker containers (`compose.yaml`): PostgreSQL, the app, and Caddy, which provides automatic HTTPS.
 
 1. **Get a VPS.** In Hostinger, buy a **KVM 1** or **KVM 2** VPS. Choose the **Ubuntu 24.04** operating system (plain, with no control panel) and set a strong root password or add your SSH key.
 2. **Open a terminal on it.** Use hPanel → VPS → **Browser terminal**, or run `ssh root@<server IP>` from your computer.
 3. **Install with one command:**
    ```bash
-   curl -fsSL https://raw.githubusercontent.com/tejasripopuri/gaugebook-fai/main/deploy/install.sh | bash
+   curl -fsSL https://raw.githubusercontent.com/tejasripopuri/gaugebook-fai/main/deploy/install.sh | sudo bash
    ```
    The installer:
    - installs Docker

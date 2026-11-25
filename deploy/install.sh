@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Gaugebook installer for a fresh Ubuntu 22.04/24.04 VPS. Run as root:
-#   curl -fsSL https://raw.githubusercontent.com/tejasripopuri/gaugebook-fai/main/deploy/install.sh | bash
+# Gaugebook installer for a fresh Ubuntu 22.04/24.04 server (x86-64 or ARM64), e.g. a Hostinger
+# VPS or an Oracle Cloud Always Free VM. Run as root:
+#   curl -fsSL https://raw.githubusercontent.com/tejasripopuri/gaugebook-fai/main/deploy/install.sh | sudo bash
 # Optional: pass your domain, e.g. `... | bash -s -- gaugebook.example.com`
 set -euo pipefail
 
@@ -12,7 +13,7 @@ DOMAIN_ARG="${1:-}"
 . /etc/os-release
 [ "${ID:-}" = ubuntu ] || echo "Warning: this installer is tested on Ubuntu; continuing on ${PRETTY_NAME:-unknown}."
 
-echo "==> Installing system packages"
+echo "==> Installing system packages ($(dpkg --print-architecture))"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -q
 apt-get install -y -q ca-certificates curl git ufw openssl unattended-upgrades
@@ -27,6 +28,16 @@ if ! command -v docker >/dev/null || ! docker compose version >/dev/null 2>&1; t
   apt-get install -y -q docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 fi
 systemctl enable --now docker
+
+# Oracle Cloud Ubuntu images ship iptables rules that reject all traffic except SSH.
+# Remove those REJECT rules so the firewall below (ufw: SSH, HTTP, HTTPS) is the one in charge.
+if [ -f /etc/iptables/rules.v4 ] && grep -q "icmp-host-prohibited" /etc/iptables/rules.v4; then
+  echo "==> Oracle Cloud image detected: replacing its default block-all firewall rules"
+  for chain in INPUT FORWARD; do
+    while iptables -D "$chain" -j REJECT --reject-with icmp-host-prohibited 2>/dev/null; do :; done
+  done
+  sed -i '/icmp-host-prohibited/d' /etc/iptables/rules.v4
+fi
 
 echo "==> Configuring the firewall (SSH, HTTP, HTTPS only)"
 ufw allow OpenSSH >/dev/null
@@ -78,6 +89,8 @@ for i in $(seq 1 60); do
   if docker compose exec -T app wget -qO- http://127.0.0.1:3000/api/health >/dev/null 2>&1; then
     echo
     echo "Gaugebook is running."
+    echo "If the page does not open, allow TCP ports 80 and 443 in your cloud provider's firewall"
+    echo "(Oracle Cloud: Networking > Virtual cloud network > Security list > Add ingress rules)."
     echo "Open: https://$DOMAIN"
     echo "(The HTTPS certificate is issued on the first visit; if the page doesn't load, wait a minute and retry.)"
     exit 0
