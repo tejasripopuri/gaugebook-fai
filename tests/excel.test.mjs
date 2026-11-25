@@ -22,7 +22,8 @@ test("Excel exports linked identifiers, extra materials and a failed bore readin
   assert.match(f1,/>Fail</);                                     // Form 1 inspection status
   assert.match(f2,/A &amp; B/);
   assert.equal((f2.match(/>Extra process</g)||[]).length,10);     // every extra material row is kept
-  assert.match(f3,/1\.249 in · Fail/);                           // field 9: reading with its decision
+  assert.match(f3,/>1\.249</);                                    // field 9: the reading only
+  assert.doesNotMatch(f3,/ · (Pass|Fail)/);
   assert.match(f3,/FAI-23/);
 });
 test("Form 3 is strictly AS9102 fields 5-12 with coloured results and a frozen header",async()=>{
@@ -32,8 +33,8 @@ test("Form 3 is strictly AS9102 fields 5-12 with coloured results and a frozen h
   const labels=[...header[0].matchAll(/<t[^>]*>([^<]*)<\/t>/g)].map(m=>m[1]);
   assert.deepEqual(labels.map(l=>l.split(".")[0]),["5","6","7","8","9","10","11","12"]);
   assert.match(f3,/<pane ySplit="\d+"[^>]*state="frozen"/);
-  const style=v=>Number(f3.match(new RegExp('<c r="E\\d+" s="(\\d+)"[^>]*><is><t[^>]*>'+v.replace(/[.]/g,"\\.")))?.[1]);
-  assert.notEqual(style("6.004 in · Pass"),style("4.020 in · Fail"));
+  const style=v=>Number(f3.match(new RegExp('<c r="E\\d+" s="(\\d+)"[^>]*><is><t[^>]*>'+v.replace(/[.]/g,"\\.")+"<"))?.[1]);
+  assert.notEqual(style("6.004"),style("4.020"));                  // green vs red cell, value only
   assert.match(styles,/FFDFF3E5/);assert.match(styles,/FFFFDFDC/);  // green and red fills exist
   assert.doesNotMatch(f3,/THRU Pending/);
   assert.match(f3,/Through hole: Pending/);

@@ -30,6 +30,7 @@ export function resultRows(plan,inspection,report) {
     return {key,throughKey,throughStatus,id:r.id,balloon:r.balloon,location:"Sheet "+(r.sheet||1)+" · "+r.name+(occ==="Result"?"":" · "+occ),
       requirement:through&&!/\bTHRU\b/i.test(r.source)?r.source+" THRU":r.source,
       result:formatResult(r,val,status,throughStatus),
+      value:String(val??"").trim(), // field 9 on the printed/exported Form 3: the reading only
       designator:combined("designator"),tool:combined("tool"),nc:combined("nc"),comments:[inspection.evidence?.[r.id],through&&inspection.evidence?.[through.id],combined("comments")].filter(Boolean).join(" / ")};
   }));
 }

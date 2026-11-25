@@ -22,7 +22,7 @@ test("custom exports expand past the sample rows and use the uploaded part",asyn
     const xml=await zip.file("xl/worksheets/sheet"+i+".xml").async("string");
     assert.doesNotMatch(xml,/SMP-1001|anodize|Adapter Plate/i);
     if(i===3){
-      assert.match(xml,/\.260 in · Fail/);assert.match(xml,/Sheet 2 · Hole · Hole 60/);
+      assert.match(xml,/>\.260</);assert.match(xml,/Sheet 2 · Hole · Hole 60/);
       assert.equal((xml.match(/Sheet 2 · Hole · Hole \d+/g)||[]).length,60);
     }
   }
