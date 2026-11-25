@@ -7,6 +7,7 @@ export function initialReport(plan) {
   return {part:{"Part number":"SMP-1001","Part name":"Adapter Plate","Part revision":"A","Drawing number":"SMP-1001","Drawing revision":"A"},products:[["6061-T651 aluminum plate","SMP-1001 Rev A, note 1"],["Clear anodize","MIL-PRF-8625, Type II, Class 1"]],tests:{},extra:{}};
 }
 export function formatResult(row,value,status,throughStatus){
+  if(row.basic)return (value?value+" "+row.unit+" · ":"")+"BASIC, for information";
   const overall=status==="Fail"||throughStatus==="Fail"?"Fail":throughStatus==="Pending"?"Pending":status;
   return row.bounds&&status!=="Pending"?value+" "+row.unit+" · "+overall:overall;
 }

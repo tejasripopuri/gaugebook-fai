@@ -66,9 +66,10 @@ function render(){
       const d=tag("details","",root);d.className="reportrow";const summary=tag("summary","Balloon "+r.balloon+" · "+r.location+" · "+r.result,d);tag("p",r.requirement,d);
       const g=grid(d),extra=report.extra[r.key]??={};
       const row=characteristics.get(r.id);
-      const label=tag("label","Result"+(row.unit&&row.bounds?" ("+row.unit+")":""),g);
-      const input=tag(row.bounds?"input":"select","",label);
-      if(row.bounds){input.inputMode="decimal";input.placeholder="Enter measured value";}
+      const numeric=row.bounds||row.basic;
+      const label=tag("label","Result"+(row.unit&&numeric?" ("+row.unit+")":""),g);
+      const input=tag(numeric?"input":"select","",label);
+      if(numeric){input.inputMode="decimal";input.placeholder=row.basic?"Measured value (for information)":"Enter measured value";}
       else for(const v of ["","Pass","Fail"])input.add(new Option(v||"Select result",v));
       input.value=read(key,{}).answers?.[r.key]??"";
       const decision=tag("small",judge(row,input.value),label);

@@ -30,8 +30,9 @@ function expandRows(xml,extra,lastRow){
 // Derive the Form 1 summary directly from Form 3's editable result cells.
 function summaryFormula(checks){
   if(!checks.length)return '"Not yet inspected"';
-  const scores=checks.map(({bounds,throughStatus},index)=>{
+  const scores=checks.map(({bounds,throughStatus,basic},index)=>{
     const cell="'Form 3'!E"+(8+index);
+    if(basic)return "0"; // BASIC: recorded for information only
     if(!bounds)return `IF(${cell}="Fail",2,IF(${cell}="Pass",0,1))`;
     const diameter=`IF(ISNUMBER(${cell}),IF(AND(${cell}>=${bounds[0]},${cell}<=${bounds[1]}),0,2),1)`;
     if(!throughStatus)return diameter;
@@ -64,7 +65,7 @@ export async function makeWorkbook(bytes,report,plan,inspection,zipLibrary=globa
     const n=originalSlots.get(r.key),characteristic=plan.rows.find(c=>c.id===r.id),reading=inspection.answers?.[r.key],decision=judge(characteristic,reading);
     status.push(r.throughStatus?summarize([decision,r.throughStatus]):decision);checks.push({...characteristic,throughStatus:r.throughStatus});
     kept.set(n,i+8);actual["A"+n]=r.balloon;
-    actual["B"+n]=r.location;actual["D"+n]=r.requirement;actual["C"+n]=r.designator;actual["E"+n]=characteristic.bounds&&decision!=="Pending"?Number(reading):reading;
+    actual["B"+n]=r.location;actual["D"+n]=r.requirement;actual["C"+n]=r.designator;actual["E"+n]=(characteristic.bounds&&decision!=="Pending")||(characteristic.basic&&reading&&!isNaN(Number(reading)))?Number(reading):reading;
     actual["F"+n]=r.tool;actual["G"+n]=r.nc;actual["H"+n]=[r.comments,r.throughStatus&&"THRU "+r.throughStatus].filter(Boolean).join(" / ");
   });
   const path=n=>"xl/worksheets/sheet"+n+".xml";

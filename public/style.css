@@ -6,3 +6,5 @@
 .view-area,.area-corner{position:absolute;pointer-events:none}.view-area{border:1px dashed #43816f}.area-corner{width:9px;height:9px;background:#c46b10;transform:translate(-50%,-50%);border-radius:50%}
 
 .hint{font-size:.85rem;color:#48615c;margin:8px 0 0}
+
+.reference{color:#3d5a80;background:#e6eef8}

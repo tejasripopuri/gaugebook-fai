@@ -21,7 +21,7 @@ function save() {
   catch {message("Browser storage is unavailable. Entries will be lost when this page closes.",true);}
 }
 function summary() {
-  const states=plan.rows.flatMap(r=>r.repeats.map((_,i)=>judge(r,answers[r.id+"-"+i])));
+  const states=plan.rows.flatMap(r=>r.repeats.map((_,i)=>judge(r,answers[r.id+"-"+i]))).filter(s=>s!=="Reference");
   const pass=states.filter(s=>s==="Pass").length,fail=states.filter(s=>s==="Fail").length;
   const result=summarize(states);
   el("summary").textContent=result;
@@ -32,7 +32,7 @@ function summary() {
   el("pending").disabled=!left;el("pending").textContent=left?"Next pending ("+left+")":"All results entered";
   plan.rows.forEach((r,j)=>{
     const s=summarize(r.repeats.map((_,i)=>judge(r,answers[r.id+"-"+i])));
-    el("select").options[j].textContent=r.balloon+". "+r.name+" — "+s;
+    el("select").options[j].textContent=r.balloon+". "+r.name+" — "+(r.basic?"BASIC (for information)":s);
   });
 }
 function choose(i) {
@@ -64,17 +64,17 @@ function choose(i) {
     box.append(checks);
   }
 
-  box.append(node("p",r.bounds?"Acceptance range "+r.bounds.join(" to ")+" "+r.unit+" (inclusive)":"Verify against the drawing and supporting evidence."));
+  box.append(node("p",r.basic?r.basicNote:r.bounds?"Acceptance range "+r.bounds.join(" to ")+" "+r.unit+" (inclusive)":"Verify against the drawing and supporting evidence."));
   r.repeats.forEach((occ,j)=>{
     const id=r.id+"-"+j, field=node("div",undefined,"field"), label=node("label","Result"+(r.repeats.length>1?" · "+occ:"")+(r.unit?" ("+r.unit+")":""));
-    const input=node(r.bounds?"input":"select"), result=node("small");
+    const input=node(r.bounds||r.basic?"input":"select"), result=node("small");
     label.htmlFor=input.id="reading-"+id;
-    if(r.bounds) {input.inputMode="decimal";input.placeholder="Enter measured value";}
+    if(r.bounds||r.basic) {input.inputMode="decimal";input.placeholder=r.basic?"Measured value (for information)":"Enter measured value";}
     else for(const [v,t] of [["","Select result"],["Pass","Pass"],["Fail","Fail"]]) input.add(new Option(t,v));
     input.value=answers[id]??"";
     function show() {
       const state=judge(r,input.value);
-      result.textContent=state==="Pending"&&input.value?"Enter a decimal number":state;
+      result.textContent=state==="Reference"?"BASIC · for information, not pass/fail":state==="Pending"&&input.value?"Enter a decimal number":state;
       result.className=state.toLowerCase();
     }
     input.oninput=()=>{answers[id]=input.value;show();save();summary();};
