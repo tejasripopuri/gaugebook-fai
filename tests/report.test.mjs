@@ -13,7 +13,8 @@ test("report preserves separate occurrences, evidence and failed readings",()=>{
   assert.equal(row.nc,"NCR-123");assert.match(row.result,/Fail/);assert.match(row.comments,/record 1/);
   assert.equal(rows.filter(e=>e.result.startsWith("Pending")).length,31);
   assert.ok(plan.rows.every(r=>r.source.length>0));
-  assert.equal(rows.length,32);
+  assert.equal(rows.length,36);
+  assert.equal(rows.filter(e=>e.result.startsWith("BASIC")).length,4);
   assert.ok(rows.every(r=>! /^(?:4X )?THRU$/.test(r.requirement)));
   assert.equal(row.requirement,"4X Ø.281 ±.005 THRU");
   assert.equal(row.throughKey,"13-2");
@@ -47,5 +48,5 @@ test("shared callouts use one balloon and deletion renumbers without shifting re
  assert.ok(reduced.every(r=>r.id!==5&&r.id!==6));
  assert.equal(balloon(reduced,7),balloon(all,7)-1);
  assert.match(reduced.find(r=>r.id===7).result,/1.750.*Pass/);
- assert.deepEqual([...new Set(reduced.map(r=>r.balloon))],Array.from({length:20},(_,i)=>i+1));
+ assert.deepEqual([...new Set(reduced.map(r=>r.balloon))],Array.from({length:24},(_,i)=>i+1));
 });

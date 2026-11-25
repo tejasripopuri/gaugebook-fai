@@ -1,5 +1,5 @@
 const angularHeading=/\b(?:ANG(?:ULAR)?|ANGLES?)\b\s*(?:TOL(?:ERANCES?)?\.?)?\s*[:=]?\s*/i;
-const angularValue=/^(?:±|\+\s*\/\s*[-−])\s*(\d+(?:\.\d+)?|\.\d+)\s*(°|deg(?:rees?)?\b|[′’']|min(?:utes?)?\b)?/i;
+const angularValue=/^(?:±|\+\s*\/\s*[-−]|\+(?=\s*(?:\d+(?:\.\d+)?|\.\d+)\s*(?:°|deg)))\s*(\d+(?:\.\d+)?|\.\d+)\s*(°|deg(?:rees?)?\b|[′’']|min(?:utes?)?\b)?/i;
 
 export function drawingAngleDefault(lines){
   const values=new Map();
@@ -71,4 +71,44 @@ export function repairOcrText(text){
       const plausible=/[.°]/.test(value)&&(at===0||/[\sØR(]/.test(all[at-1]));
       return plausible&&parseFloat(tol)>0?value+" ±"+tol:match;
     });
+}
+
+// Title-block general tolerances by decimal places, e.g. ".XX ±.01  .XXX ±.005" (inch) or
+// "X.X ±0.1  X.XX ±0.05" / "X ±0.5" (metric). Returns Map(decimals -> {tol,label}).
+// Also accepts the forms image OCR produces from a title block: "-XX +.01" or "XXX +.005"
+// (± read as +, the decimal point read as "-" or lost). Two or more X's always mean decimals.
+const generalPattern=/(?<![\w.])(X?)([.,-]?)(X{0,4})\s*[:=]?\s*(?:±|\+(?!\s*\/))\s*(\d*\.?\d+)/g;
+function generalRule(m){
+  const xs=m[1]+m[3];
+  if(!xs)return null;
+  const decimals=m[2]?m[3].length:xs.length>1?xs.length:0;
+  if(m[2]&&!m[3])return null;
+  const tol=Number(m[4]);
+  if(!(tol>0))return null;
+  const label=decimals?(m[2]&&m[1]?"X":"")+"."+"X".repeat(decimals):"X";
+  return {decimals,tol,label:label+" ±"+m[4]};
+}
+export function drawingLinearDefaults(lines){
+  const defaults=new Map();
+  for(const {text} of lines)for(const m of text.matchAll(generalPattern)){
+    const rule=generalRule(m);
+    if(rule)defaults.set(rule.decimals,{tol:rule.tol,label:rule.label});
+  }
+  return defaults;
+}
+export const definesGeneralTolerance=text=>[...text.matchAll(generalPattern)].some(m=>generalRule(m));
+
+// A dimension printed without its own tolerance takes the title-block tolerance for its number
+// of decimal places. Reference dimensions (REF or in brackets) are not inspected and stay as they are.
+export function withGeneralTolerance(proposal,defaults){
+  if(proposal.bounds||proposal.unit==="°"||!defaults?.size)return proposal;
+  const source=proposal.source.trim();
+  if(/\bREF\b|^\(.*\)$/i.test(source))return proposal;
+  const m=source.match(/^(?:\d+\s*[xX×]\s*)?(?:[Ø⌀]|R)?\s*(\d+(?:\.(\d*))?|\.(\d+))(?:\s+(?:THRU|TYP|DP|DEEP|BSC|BASIC))*$/i);
+  if(!m)return proposal;
+  const rule=defaults.get((m[2]??m[3]??"").length);
+  if(!rule)return proposal;
+  const nominal=Number(m[1]);
+  return {...proposal,source:source+" ("+rule.label+" title block)",generalTolerance:rule.label,
+    bounds:[nominal-rule.tol,nominal+rule.tol].map(x=>Number(x.toFixed(10)))};
 }
