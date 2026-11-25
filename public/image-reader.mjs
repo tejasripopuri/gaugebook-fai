@@ -50,11 +50,13 @@ export function sourceCrop(page,row) {
   ctx.drawImage(page,x,y,w,h,0,0,w,h);
   return c;
 }
-let worker;
+let worker,ocrProgress=null;
+// Progress reports from the OCR engine (status text and 0-1 fraction), used for on-screen progress.
+const ocrLogger=m=>ocrProgress?.(m.status,m.progress);
 async function workerInstance() {
   const {default:Tesseract}=await import("./vendor/ocr/tesseract.esm.min.js");
   const asset=name=>new URL("./vendor/ocr/"+name,import.meta.url).href;
-  worker??=Tesseract.createWorker("eng",1,{workerPath:asset("worker.min.js"),corePath:asset("tesseract-core-lstm.wasm.js"),langPath:asset(""),workerBlobURL:false}).then(async w=>{await w.setParameters({tessedit_pageseg_mode:"6"});return w;}).catch(e=>{worker=undefined;throw e;});
+  worker??=Tesseract.createWorker("eng",1,{workerPath:asset("worker.min.js"),corePath:asset("tesseract-core-lstm.wasm.js"),langPath:asset(""),workerBlobURL:false,logger:ocrLogger}).then(async w=>{await w.setParameters({tessedit_pageseg_mode:"6"});return w;}).catch(e=>{worker=undefined;throw e;});
   return worker;
 }
 export async function recognize(crop) {
@@ -99,8 +101,20 @@ export async function openSheets(file){
 }
 
 // Read vertically printed dimensions in their natural orientation, then map the boxes back.
-export async function dimensionLines(canvas){
+// onProgress(fraction 0-1, label) is optional and reports both OCR passes as one.
+export async function dimensionLines(canvas,onProgress){
+  const pass=(from,to)=>(status,p)=>{
+    if(!onProgress)return;
+    if(status==="recognizing text")onProgress(from+(to-from)*p,"Reading dimensions");
+    else if(/loading|initializ/i.test(status||""))onProgress(from,"Starting the text reader");
+  };
+  ocrProgress=pass(0,.6);
+  try{return await readBoth(canvas,()=>{ocrProgress=pass(.6,1);});}
+  finally{ocrProgress=null;}
+}
+async function readBoth(canvas,secondPass){
   const upright=await sheetLines(canvas);
+  secondPass();
   const turned=document.createElement("canvas");turned.width=canvas.height;turned.height=canvas.width;
   const ctx=turned.getContext("2d");ctx.translate(canvas.height,0);ctx.rotate(Math.PI/2);ctx.drawImage(canvas,0,0);
   const vertical=(await sheetLines(turned)).filter(l=>l.confidence>=45&&/[.±Ø⌀°]/.test(l.text)&&/\d/.test(l.text));
