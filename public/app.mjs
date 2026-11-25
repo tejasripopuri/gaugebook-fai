@@ -30,11 +30,32 @@ function summary() {
   el("bar").style.width=(states.length?(pass+fail)/states.length*100:0)+"%";
   const left=states.length-pass-fail;
   el("pending").disabled=!left;el("pending").textContent=left?"Next pending ("+left+")":"All results entered";
+  paintPins();
   plan.rows.forEach((r,j)=>{
     const s=summarize(r.repeats.map((_,i)=>judge(r,answers[r.id+"-"+i])));
     el("select").options[j].textContent=r.balloon+". "+r.name+" — "+(r.basic?"BASIC (for information)":s);
   });
 }
+// Balloon colours: green pass, red fail, grey not yet measured (all results of a balloon's group).
+function paintPins(){
+  document.querySelectorAll(".pin").forEach(pin=>{
+    const rows=plan.rows.filter(r=>String(r.group)===pin.dataset.group);
+    const s=summarize(rows.flatMap(r=>r.repeats.map((_,i)=>judge(r,answers[r.id+"-"+i]))));
+    pin.classList.toggle("pass",s==="Pass");pin.classList.toggle("fail",s==="Fail");
+    pin.title=pin.title.replace(/ · (Pass|Fail|Not yet inspected)$/,"")+" · "+s;
+  });
+}
+el("balloonPdf").onclick=async()=>{
+  const button=el("balloonPdf");button.disabled=true;message("Preparing the ballooned drawing…");
+  try{
+    const {balloonedDrawingPdf,saveFile}=await import("./ballooned-pdf.mjs");
+    const image=el("paper").querySelector("canvas,img");
+    const balloons=[...document.querySelectorAll(".pin")].map(p=>({x:parseFloat(p.style.left)/100,y:parseFloat(p.style.top)/100,label:p.textContent}));
+    saveFile(await balloonedDrawingPdf([{image,balloons}],{title:"SMP-1001 Rev A ballooned drawing"}),"SMP-1001-Rev-A-ballooned.pdf");
+    message("Ballooned drawing downloaded.");
+  }catch(e){message("Could not create the ballooned drawing. "+e.message,true);}
+  finally{button.disabled=false;}
+};
 function choose(i) {
   index=i; const r=plan.rows[i];
   el("select").value=String(i);

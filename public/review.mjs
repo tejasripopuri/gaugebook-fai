@@ -34,7 +34,18 @@ function resultStatus(row,value){
   if(!row.bounds&&!row.confirmed&&row.method!=="attribute")return "Pending";
   return judge(row,value);
 }
+// Balloon colours: amber to confirm, then green pass, red fail, grey not yet measured.
+function paintPins(){
+  const answers=state().answers||{};
+  for(const pin of el("paper").querySelectorAll(".pin")){
+    const r=plan.rows.find(x=>String(x.id)===pin.dataset.id);if(!r)continue;
+    const s=!r.confirmed?"To confirm":summarize(r.repeats.map((_,i)=>resultStatus(r,answers[r.id+"-"+i]??"")));
+    pin.classList.toggle("review",s==="To confirm");pin.classList.toggle("pass",s==="Pass");pin.classList.toggle("fail",s==="Fail");
+    pin.title=r.name+" · "+s;
+  }
+}
 function updateSummary(){
+  paintPins();
   const data=state(),statuses=plan.rows.flatMap(r=>r.repeats.map((_,i)=>resultStatus(r,data.answers?.[r.id+"-"+i])));
   const done=Array.from({length:doc.count},(_,i)=>plan.approved[i+1]).every(Boolean);
   const status=summarize(done?statuses:[...statuses,"Pending"]);
@@ -59,7 +70,7 @@ function redraw(){
   el("unused").replaceChildren(...off.map(r=>new Option(r.name,r.id)));
   el("attach").disabled=scanning||!areas().length;
   for(const r of rows){
-    const pin=document.createElement("button");pin.className="pin"+(r===row?" active":"");pin.textContent=idx(r);
+    const pin=document.createElement("button");pin.className="pin"+(r===row?" active":"");pin.textContent=idx(r);pin.dataset.id=r.id;
     pin.style.left=r.xy[0]*100+"%";pin.style.top=r.xy[1]*100+"%";pin.title=r.name;if(placing)pin.style.pointerEvents="none";
     pin.onclick=e=>{e.stopPropagation();selected=r.id;redraw();};el("paper").append(pin);
   }
@@ -104,6 +115,23 @@ function editingRequirement(){
 }
 el("requirement").oninput=editingRequirement;el("method").onchange=editingRequirement;
 el("rows").onchange=e=>{selected=Number(e.target.value);redraw();};
+el("balloonPdf").onclick=async()=>{
+  const button=el("balloonPdf");button.disabled=true;message("Preparing the ballooned drawing…");
+  try{
+    const {balloonedDrawingPdf,saveFile}=await import("./ballooned-pdf.mjs");
+    const sheets=[];
+    for(let n=1;n<=doc.count;n++){
+      const image=n===page?canvas:await doc.render(n);
+      const balloons=plan.rows.filter(r=>r.sheet===n).map(r=>({x:r.xy[0],y:r.xy[1],label:String(plan.rows.indexOf(r)+1)}));
+      sheets.push({image,balloons});
+    }
+    const name=(plan.name||"drawing").replace(/\.[^.]+$/,"");
+    saveFile(await balloonedDrawingPdf(sheets,{title:name+" ballooned drawing"}),name+"-ballooned.pdf");
+    const unread=Array.from({length:doc.count},(_,i)=>i+1).filter(n=>!plan.scanned[n]);
+    message("Ballooned drawing downloaded."+(unread.length?" Sheet "+unread.join(", ")+" "+(unread.length>1?"have":"has")+" not been read yet, so "+(unread.length>1?"they have":"it has")+" no balloons; open "+(unread.length>1?"them":"it")+" with the Sheet selector first.":"")+(plan.rows.some(r=>!r.confirmed)?" Some balloons are not confirmed yet.":""));
+  }catch(e){message("Could not create the ballooned drawing. "+e.message);}
+  finally{button.disabled=false;}
+};
 // Fast entry: Enter confirms the characteristic if needed, then moves to the next result,
 // then to the next characteristic on this sheet. "Next pending" jumps to the next gap.
 function focusResult(rowId,i){
