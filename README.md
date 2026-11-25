@@ -57,7 +57,16 @@ Known limits:
 - There is no password reset yet.
 - If the same inspection is edited on two devices at once, the last save wins. The earlier value is kept in `audit_events`.
 
-## 5. Deploy on a Hostinger VPS
+## 5. Deploy on Vercel + Neon (free, no server)
+The same code runs on Vercel. The API in `api/` runs as Vercel Functions; data is in a free Neon PostgreSQL database; drawings are in a private Vercel Blob store, and large ones upload directly to it.
+1. In the Vercel project: **Storage → Create Database → Neon (free)**, connected to the project. This adds `DATABASE_URL`.
+2. **Storage → Blob** (private), connected to the project. This adds `BLOB_READ_WRITE_TOKEN`.
+3. **Settings → Environment Variables:** add `SESSION_SECRET`, a random value of at least 32 characters.
+4. **Settings → Git:** connect this repository. Every merge to `main` then deploys automatically. The tables are created on first use.
+
+Limits: Vercel's free Hobby plan is for non-commercial use, and sign-in attempt limits are kept per function instance there.
+
+## 6. Deploy on a Hostinger VPS
 The app runs on the VPS as three Docker containers (`compose.yaml`): PostgreSQL, the app, and Caddy, which provides automatic HTTPS.
 
 1. **Get a VPS.** In Hostinger, buy a **KVM 1** or **KVM 2** VPS. Choose the **Ubuntu 24.04** operating system (plain, with no control panel) and set a strong root password or add your SSH key.
