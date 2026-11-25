@@ -18,7 +18,7 @@ const style = document.createElement("style");
 style.textContent = `.gb-account{display:flex;align-items:center;gap:14px;font-size:.9rem}.gb-account .who{opacity:.85}
 .gb-account button{background:transparent;border:1px solid #6f978f;padding:5px 12px;font-size:.85rem}
 .gb-status{font-size:.8rem;padding:3px 9px;border-radius:12px;background:#1d5047;color:#d8eee6;white-space:nowrap}
-.gb-status.warn{background:#7a4a10;color:#fff2dc}main[inert]{opacity:.6;transition:opacity .2s}header{flex-wrap:wrap;gap:10px}`;
+.gb-status.warn{background:#7a4a10;color:#fff2dc}main[inert]{opacity:.6;transition:opacity .2s}.gb-update{background:#fff4d6;color:#5a3d00;padding:10px 5vw;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:.95rem}.gb-update button{padding:6px 14px}header{flex-wrap:wrap;gap:10px}`;
 document.head.append(style);
 const status = document.createElement("span");
 status.className = "gb-status";
@@ -212,43 +212,105 @@ async function listDrawings() {
 }
 
 // ---------- start ----------
-async function start() {
-  setStatus("Loading…");
-  let user;
-  try {
-    const res = await fetch("api/auth/me", { credentials: "same-origin" });
-    if (res.status === 401) return toSignIn();
-    user = (await res.json()).user;
-  } catch {
-    // Offline: continue with this device's copy if it belongs to someone.
-    if (!ls.getItem(OWNER)) return toSignIn();
-    user = JSON.parse(ls.getItem(OWNER));
-    showAccount(user);
-    setStatus("Offline · changes saved on this device", true);
-    return true;
+// The server copy, after sending any changes made on this device first.
+async function pull() {
+  await flush();
+  const res = await fetch("api/state", { credentials: "same-origin" });
+  if (res.status === 401) { toSignIn(); throw new Error("Signed out"); }
+  if (!res.ok) throw new Error("Server error " + res.status);
+  const body = await res.json();
+  let user = body.user;
+  if (!user) { // older server that does not include the user
+    const me = await fetch("api/auth/me", { credentials: "same-origin" });
+    if (me.status === 401) { toSignIn(); throw new Error("Signed out"); }
+    user = (await me.json()).user;
   }
+  return { user, items: body.items };
+}
+
+// Make this device's copy match the server (keeping unsent local edits). True if anything changed.
+function apply(items) {
+  const pending = new Set(readList(DIRTY));
+  let changed = false;
+  for (let i = ls.length - 1; i >= 0; i--) {
+    const k = ls.key(i);
+    if (k && k.startsWith(PREFIX) && !(k in items) && !pending.has(k)) { rawRemove.call(ls, k); changed = true; }
+  }
+  for (const [k, v] of Object.entries(items)) {
+    if (!pending.has(k) && ls.getItem(k) !== v) { rawSet.call(ls, k, v); changed = true; }
+  }
+  return changed;
+}
+
+function savedStatus() {
+  if (!readList(DIRTY).length) setStatus("All changes saved");
+}
+
+function updateBanner(items) {
+  const bar = document.createElement("div");
+  bar.className = "gb-update";
+  bar.setAttribute("role", "status");
+  bar.textContent = "Newer changes were saved from another device. ";
+  const btn = document.createElement("button");
+  btn.textContent = "Reload to see them";
+  btn.onclick = async () => { await flush(); apply(items); location.reload(); };
+  bar.append(btn);
+  document.querySelector("header")?.after(bar);
+}
+
+// Repeat visit: the page already opened from this device's copy; check the server now.
+async function refresh(owner) {
+  let touched = false;
+  const touch = () => (touched = true);
+  addEventListener("pointerdown", touch, { capture: true, once: true });
+  addEventListener("keydown", touch, { capture: true, once: true });
+  try {
+    const { user, items } = await pull();
+    if (user.id !== owner.id) { // a different account is signed in on this browser
+      clearLocal();
+      rawSet.call(ls, OWNER, JSON.stringify(user));
+      apply(items);
+      return location.reload();
+    }
+    rawSet.call(ls, OWNER, JSON.stringify(user));
+    const pending = new Set(readList(DIRTY));
+    const differs = Object.entries(items).some(([k, v]) => !pending.has(k) && ls.getItem(k) !== v) ||
+      Object.keys(localStorage).some((k) => k.startsWith(PREFIX) && !(k in items) && !pending.has(k));
+    if (!differs) return savedStatus();
+    // The running page holds the old values in memory, so it must reload to use the new ones.
+    if (!touched) { apply(items); return location.reload(); }
+    savedStatus();
+    updateBanner(items);
+  } catch (e) {
+    if (e.message === "Signed out") return;
+    setStatus(navigator.onLine ? "Couldn't reach server · using this device's copy" : "Offline · changes saved on this device", true);
+  }
+}
+
+async function start() {
   let owner = null;
   try { owner = JSON.parse(ls.getItem(OWNER) || "null"); } catch {}
-  if (!owner || owner.id !== user.id) clearLocal();
-  rawSet.call(ls, OWNER, JSON.stringify(user));
-  showAccount(user);
-
-  await flush(); // send changes made while offline before taking the server copy
-  try {
-    const res = await api("api/state");
-    const { items } = await res.json();
-    const pending = new Set(readList(DIRTY));
-    for (let i = ls.length - 1; i >= 0; i--) {
-      const k = ls.key(i);
-      if (k && k.startsWith(PREFIX) && !(k in items) && !pending.has(k)) rawRemove.call(ls, k);
-    }
-    for (const [k, v] of Object.entries(items)) if (!pending.has(k)) rawSet.call(ls, k, v);
-    if (!pending.size) setStatus("All changes saved");
-  } catch (e) {
-    if (e.message === "Signed out") return false;
-    setStatus("Couldn't reach server · using this device's copy", true);
+  if (owner?.id) {
+    // Open straight away from this device's copy; the server check runs alongside.
+    showAccount(owner);
+    setStatus("Checking for updates…");
+    refresh(owner);
+    return true;
   }
-  return true;
+  // First visit on this device: wait for the server copy.
+  setStatus("Loading…");
+  try {
+    const { user, items } = await pull();
+    clearLocal();
+    rawSet.call(ls, OWNER, JSON.stringify(user));
+    showAccount(user);
+    apply(items);
+    savedStatus();
+    return true;
+  } catch (e) {
+    if (e.message !== "Signed out") toSignIn();
+    return false;
+  }
 }
 
 // Keep the page inactive until its own script has wired up its buttons, so an early

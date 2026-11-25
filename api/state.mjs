@@ -17,11 +17,11 @@ function keyFrom(req) {
   return key && KEY.test(key) ? key : null;
 }
 
-// GET /api/state  -> { items: { key: value, ... } }
+// GET /api/state  -> { user, items: { key: value, ... } }
 export const GET = route(async (req) => {
   const [s, fail] = auth(req, false);
   if (fail) return fail;
-  return json({ items: await listEntries(s.uid) });
+  return json({ user: { id: s.uid, email: s.email, name: s.name }, items: await listEntries(s.uid) });
 });
 
 // PUT /api/state?key=gaugebook-...   body: the raw stored string

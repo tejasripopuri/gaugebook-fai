@@ -150,7 +150,8 @@ async function run(file) {
   try {
     if(file){
       // Only the known sample can inherit its pre-reviewed characteristics.
-      try {await readDrawing(file);} catch {await openUpload(file);return;}
+      message("Opening "+file.name+"…");
+      try {await readDrawing(file);} catch {message("Saving "+file.name+" to your account…");await openUpload(file);return;}
     }
     await load(file);
     message("Image matched to SMP-1001 Rev A · Select a balloon to inspect its source pixels.");

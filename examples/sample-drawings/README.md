@@ -7,7 +7,7 @@ These are 50 **fictional** training drawings for testing uploads in Gaugebook. N
 | Part families | Mounting plates, bolted flanges, angle brackets, stepped shafts, fixture blocks (10 of each) |
 | Formats | 30 PDF, 5 of them with two sheets (SMP-2006, 2012, 2018, 2024, 2030) · 15 PNG · 5 JPEG made to look like scanned prints (slight skew and blur) |
 | Units | 34 in inches, 16 in millimetres |
-| Callouts | 416 in total. 312 have tolerances to measure; the rest are notes, threads, flatness and runout to verify |
+| Callouts | 416 in total. 327 have tolerances to measure; the rest are notes, threads, flatness and runout to verify |
 
 - **`answer-key.csv`**: every callout on every drawing, with the acceptance limits an inspector should derive from it (`lower`, `upper`, `unit`). Rows marked `verify` have no numeric limits.
 - **`drawings.json`**: one line per drawing: family, units, sheets and callout counts.

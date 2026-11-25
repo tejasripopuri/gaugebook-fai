@@ -175,8 +175,16 @@ el("delete").onclick=()=>{const r=active();if(!confirm("Delete this balloon and 
   const i=plan.rows.indexOf(r);plan.deleted.push({i,row:r});plan.rows.splice(i,1);selected=onPage()[0]?.id;changed();redraw();};
 el("undo").onclick=async()=>{const {i,row}=plan.deleted.pop();plan.rows.splice(i,0,row);partition();plan.approved[row.sheet]=false;save();await show(row.sheet,plan.rows.includes(row)?row.id:undefined);};
 el("approve").onclick=()=>{if(confirm("Confirm that all applicable requirements on this sheet have been accounted for?")){plan.approved[page]=true;save();redraw();}};
+// Step-by-step progress while a sheet is read.
+function progress(fraction,label){
+  const bar=el("scanBar");
+  if(fraction==null){bar.hidden=true;return;}
+  bar.hidden=false;bar.firstElementChild.style.width=Math.round(fraction*100)+"%";
+  const sheet=doc.count>1?"Sheet "+page+" of "+doc.count+" · ":"";
+  message(sheet+label+"… "+Math.round(fraction*100)+"%");
+}
 async function scan(){
-  if(scanning||plan.scanned[page])return;scanning=true;redraw();message("Locating drawing features and numbering characteristics…");
+  if(scanning||plan.scanned[page])return;scanning=true;redraw();progress(0,"Checking for a known drawing layout");
   try{
     const existing=[...plan.rows,...plan.offView].filter(r=>r.sheet===page);
     function insert(proposal,x,y,off=false){
@@ -201,19 +209,22 @@ async function scan(){
       for(const p of layout.rows)insert(p,...p.xy);
       for(const p of layout.supplemental)insert(p,...p.xy,true);
     }else{
+      progress(.05,"Reading drawing text");
       const embedded=await doc.labels?.(page).catch(()=>[])||[];
       let ocr;
-      try{ocr=await dimensionLines(canvas);}catch(error){if(!embedded.length)throw error;ocr=[];}
+      try{ocr=await dimensionLines(canvas,(f,label)=>progress(.1+.8*f,label));}catch(error){if(!embedded.length)throw error;ocr=[];}
       const lines=verifiedImageLines(ocr,embedded);
+      progress(.92,"Finding drawing views");await new Promise(requestAnimationFrame);
       plan.areas[page]=detectViews(canvas,lines);
       partition();
+      progress(.97,"Numbering balloons");await new Promise(requestAnimationFrame);
       for(const row of generalRows(lines,areas(),canvas.width,canvas.height))insert(row,...row.xy,row.off);
       (plan.generalVersion??={})[page]=3;
     }
     sortRows();(plan.dimensionOnly??={})[page]=true;plan.scanned[page]=true;selected=onPage()[0]?.id;changed();
     message(plan.imageMatches?.[page]?"Automatic numbering complete. Image layout matches "+plan.imageMatches[page]+". Check each proposed value against the uploaded revision before confirming it.":onPage().length?"Automatic numbering complete. Review the balloons against the drawing.":"No dimensions could be placed confidently. Check the original sheet and any unplaced text.");
   }catch(e){message("Image reading failed. Click the drawing to enter a callout manually, or retry. "+e.message);}
-  finally{scanning=false;redraw();}
+  finally{scanning=false;el("scanBar").hidden=true;redraw();}
 }
 async function show(n,selection){
   el("sheet").disabled=true;el("scan").disabled=true;
