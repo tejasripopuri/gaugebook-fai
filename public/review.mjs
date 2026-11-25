@@ -60,6 +60,9 @@ function redraw(){
   el("approve").disabled=!areas().length||scanning||plan.approved[page]||rows.some(r=>!r.confirmed);
   el("scan").disabled=scanning||plan.scanned[page];el("sheet").disabled=scanning;
   el("undo").hidden=!plan.deleted.length;
+  const fromPdf=onPage().filter(pdfConfirmable);
+  el("confirmPdf").hidden=!fromPdf.length;el("confirmPdf").disabled=scanning;
+  el("confirmPdf").textContent="Confirm PDF-text values ("+fromPdf.length+")";
   const select=el("rows");select.replaceChildren();
   for(const r of rows)select.add(new Option(idx(r)+". "+r.name+(r.confirmed?"":" · Review"),r.id));
   if(row)select.value=row.id;
@@ -115,6 +118,22 @@ function editingRequirement(){
 }
 el("requirement").oninput=editingRequirement;el("method").onchange=editingRequirement;
 el("rows").onchange=e=>{selected=Number(e.target.value);redraw();};
+// Bulk confirmation: only values whose callout and limits were read straight from the PDF's text.
+// Scanned-image readings, title-block tolerances, attribute checks and unplaced callouts stay manual.
+function pdfConfirmable(r){
+  return !r.confirmed&&r.fromPdfText&&Array.isArray(r.bounds)&&!r.generalTolerance&&!r.unplaced&&!r.manual;
+}
+el("confirmPdf").onclick=()=>{
+  const rows=onPage().filter(pdfConfirmable);
+  if(!rows.length)return;
+  const n=r=>plan.rows.indexOf(r)+1;
+  const list=rows.slice(0,25).map(r=>"  "+n(r)+".  "+r.source).join("\n")+(rows.length>25?"\n  … and "+(rows.length-25)+" more":"");
+  if(!confirm("Confirm these "+rows.length+" values, read directly from the PDF's text?\n\n"+list+"\n\nValues from scanned images or the title block are not included and still need individual review."))return;
+  for(const r of rows)Object.assign(r,{method:"numeric",confirmed:true});
+  changed();redraw();
+  const left=onPage().filter(r=>!r.confirmed).length;
+  message(rows.length+" characteristic"+(rows.length>1?"s":"")+" confirmed from PDF text."+(left?" "+left+" still need"+(left>1?"":"s")+" individual review.":" Every balloon on this sheet is confirmed."));
+};
 el("balloonPdf").onclick=async()=>{
   const button=el("balloonPdf");button.disabled=true;message("Preparing the ballooned drawing…");
   try{
@@ -230,6 +249,7 @@ async function scan(){
       row.name=proposal.name||row.name;row.unit=proposal.unit||"";
       row.unplaced=off;row.sourceBox=proposal.sourceBox;
       if(proposal.generalTolerance)row.generalTolerance=proposal.generalTolerance;
+      if(proposal.fromPdfText)row.fromPdfText=true;
       if(off&&plan.rows.includes(row)){plan.rows.splice(plan.rows.indexOf(row),1);plan.offView.push(row);}
     }
     const layout=practice||await matchPracticeImage(canvas);

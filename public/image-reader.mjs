@@ -135,7 +135,7 @@ export function verifiedImageLines(ocr,embedded){
     const prev=combined.at(-1),p=prev?.bbox,b=item.bbox,h=b.y1-b.y0;
     if(p&&h>0&&Math.abs(p.y1-b.y1)<h*.24&&Math.abs(p.y0-b.y0)<h*.32&&b.x0>=p.x1-h*.15&&b.x0-p.x1<h*.7){
       prev.text+=" "+item.text;p.x1=b.x1;p.y0=Math.min(p.y0,b.y0);
-    }else combined.push({text:item.text,bbox:{...b}});
+    }else combined.push({text:item.text,bbox:{...b},fromPdfText:true}); // exact text inside the PDF
   }
   function covered({bbox:b}){
     return combined.some(({bbox:p})=>{

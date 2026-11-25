@@ -44,7 +44,7 @@ export function generalRows(lines,areas,width,height){
       const anchor=isDim&&!prose&&!remoteTag&&!inPanel?anchorFor(areas,...point):null;
       const xy=anchor?place(anchor,areas,used):point;
       if(anchor)used.push(xy);
-      rows.push({...p,sourceBox:[line.bbox.x0/width,line.bbox.y0/height,line.bbox.x1/width,line.bbox.y1/height],xy,off:!anchor,name:tag?tag[1]+" · "+p.source:p.source});
+      rows.push({...p,sourceBox:[line.bbox.x0/width,line.bbox.y0/height,line.bbox.x1/width,line.bbox.y1/height],xy,off:!anchor,name:tag?tag[1]+" · "+p.source:p.source,fromPdfText:!!line.fromPdfText});
     }
   }
   return rows;
