@@ -30,7 +30,7 @@
   "units": "mm",
   "sheets": 1,
   "callouts": 9,
-  "measured": 7
+  "measured": 8
  },
  {
   "file": "SMP-2004.pdf",
@@ -63,7 +63,7 @@
   "units": "mm",
   "sheets": 2,
   "callouts": 10,
-  "measured": 7
+  "measured": 8
  },
  {
   "file": "SMP-2007.pdf",
@@ -85,7 +85,7 @@
   "units": "in",
   "sheets": 1,
   "callouts": 9,
-  "measured": 7
+  "measured": 8
  },
  {
   "file": "SMP-2009.pdf",
@@ -129,7 +129,7 @@
   "units": "mm",
   "sheets": 2,
   "callouts": 9,
-  "measured": 7
+  "measured": 8
  },
  {
   "file": "SMP-2013.pdf",
@@ -140,7 +140,7 @@
   "units": "in",
   "sheets": 1,
   "callouts": 9,
-  "measured": 7
+  "measured": 8
  },
  {
   "file": "SMP-2014.pdf",
@@ -195,7 +195,7 @@
   "units": "mm",
   "sheets": 2,
   "callouts": 11,
-  "measured": 8
+  "measured": 10
  },
  {
   "file": "SMP-2019.pdf",
@@ -250,7 +250,7 @@
   "units": "in",
   "sheets": 1,
   "callouts": 9,
-  "measured": 7
+  "measured": 8
  },
  {
   "file": "SMP-2024.pdf",
@@ -261,7 +261,7 @@
   "units": "mm",
   "sheets": 2,
   "callouts": 13,
-  "measured": 9
+  "measured": 10
  },
  {
   "file": "SMP-2025.pdf",
@@ -305,7 +305,7 @@
   "units": "in",
   "sheets": 1,
   "callouts": 9,
-  "measured": 7
+  "measured": 8
  },
  {
   "file": "SMP-2029.pdf",
@@ -327,7 +327,7 @@
   "units": "mm",
   "sheets": 2,
   "callouts": 9,
-  "measured": 6
+  "measured": 7
  },
  {
   "file": "SMP-2031.png",
@@ -360,7 +360,7 @@
   "units": "mm",
   "sheets": 1,
   "callouts": 9,
-  "measured": 7
+  "measured": 8
  },
  {
   "file": "SMP-2034.png",
@@ -415,7 +415,7 @@
   "units": "in",
   "sheets": 1,
   "callouts": 9,
-  "measured": 7
+  "measured": 8
  },
  {
   "file": "SMP-2039.png",
@@ -470,7 +470,7 @@
   "units": "in",
   "sheets": 1,
   "callouts": 9,
-  "measured": 7
+  "measured": 8
  },
  {
   "file": "SMP-2044.png",
@@ -525,7 +525,7 @@
   "units": "mm",
   "sheets": 1,
   "callouts": 9,
-  "measured": 7
+  "measured": 8
  },
  {
   "file": "SMP-2049.jpg",

@@ -19,7 +19,7 @@ SMP-2003.pdf,SMP-2003,Base length,100.0 ±0.3,1,Front,99.7,100.3,mm,measure
 SMP-2003.pdf,SMP-2003,Upright height,90.0 ±0.2,1,Front,89.8,90.2,mm,measure
 SMP-2003.pdf,SMP-2003,Base thickness,6.0 ±0.1,1,Front,5.9,6.1,mm,measure
 SMP-2003.pdf,SMP-2003,Upright thickness,6.0 ±0.1,1,Front,5.9,6.1,mm,measure
-SMP-2003.pdf,SMP-2003,Bend angle,90° ±0.5°,1,Front,,,,verify
+SMP-2003.pdf,SMP-2003,Bend angle,90° ±0.5°,1,Front,89.5,90.5,°,measure
 SMP-2003.pdf,SMP-2003,Bracket width,60.0 ±0.3,1,Side,59.7,60.3,mm,measure
 SMP-2003.pdf,SMP-2003,Base hole diameter,2X Ø6.6 ±0.1 THRU BASE,2,Top,6.5,6.7,mm,measure
 SMP-2003.pdf,SMP-2003,Upright slot width,SLOT 9.9 ±0.1 WIDE,1,Side,9.8,10.0,mm,measure
@@ -50,7 +50,7 @@ SMP-2006.pdf,SMP-2006,Corner radius,4X R5.0 ±0.1,4,Top,4.9,5.1,mm,measure
 SMP-2006.pdf,SMP-2006,Plate thickness,6.0 ±0.1,1,Front,5.9,6.1,mm,measure
 SMP-2006.pdf,SMP-2006,Flatness,FLATNESS 0.05,1,Front,,,,verify
 SMP-2006.pdf,SMP-2006,Material,Material: 6061-T651 aluminum,1,,,,,verify
-SMP-2006.pdf,SMP-2006,Edge chamfer,1.5 X 45° ±1° CHAM,1,Side,,,,verify
+SMP-2006.pdf,SMP-2006,Edge chamfer,1.5 X 45° ±1° CHAM,1,Side,44.0,46.0,°,measure
 SMP-2006.pdf,SMP-2006,Side hole diameter,Ø4.2 ±0.05 THRU,1,Side,4.15,4.25,mm,measure
 SMP-2007.pdf,SMP-2007,Flange outside diameter,Ø4.000 ±.010,1,Top,3.99,4.01,in,measure
 SMP-2007.pdf,SMP-2007,Bolt hole diameter,4X Ø.343 ±.003 THRU,4,Top,0.34,0.346,in,measure
@@ -63,7 +63,7 @@ SMP-2008.pdf,SMP-2008,Base length,4.000 ±.015,1,Front,3.985,4.015,in,measure
 SMP-2008.pdf,SMP-2008,Upright height,2.400 ±.005,1,Front,2.395,2.405,in,measure
 SMP-2008.pdf,SMP-2008,Base thickness,.188 ±.003,1,Front,0.185,0.191,in,measure
 SMP-2008.pdf,SMP-2008,Upright thickness,.188 ±.003,1,Front,0.185,0.191,in,measure
-SMP-2008.pdf,SMP-2008,Bend angle,90° ±1°,1,Front,,,,verify
+SMP-2008.pdf,SMP-2008,Bend angle,90° ±1°,1,Front,89.0,91.0,°,measure
 SMP-2008.pdf,SMP-2008,Bracket width,2.000 ±.005,1,Side,1.995,2.005,in,measure
 SMP-2008.pdf,SMP-2008,Base hole diameter,2X Ø.257 ±.002 THRU BASE,2,Top,0.255,0.259,in,measure
 SMP-2008.pdf,SMP-2008,Upright slot width,SLOT .386 ±.003 WIDE,1,Side,0.383,0.389,in,measure
@@ -99,13 +99,13 @@ SMP-2012.pdf,SMP-2012,Flange thickness,15.0 ±0.1,1,Front,14.9,15.1,mm,measure
 SMP-2012.pdf,SMP-2012,Hub height,12.0 ±0.2,1,Front,11.8,12.2,mm,measure
 SMP-2012.pdf,SMP-2012,Hub diameter,Ø80.0 ±0.2,1,Front,79.8,80.2,mm,measure
 SMP-2012.pdf,SMP-2012,Material,Material: 304 stainless steel,1,,,,,verify
-SMP-2012.pdf,SMP-2012,Edge chamfer,1.5 X 45° ±1° CHAM,1,Side,,,,verify
+SMP-2012.pdf,SMP-2012,Edge chamfer,1.5 X 45° ±1° CHAM,1,Side,44.0,46.0,°,measure
 SMP-2012.pdf,SMP-2012,Side hole diameter,Ø4.2 ±0.05 THRU,1,Side,4.15,4.25,mm,measure
 SMP-2013.pdf,SMP-2013,Base length,4.000 ±.015,1,Front,3.985,4.015,in,measure
 SMP-2013.pdf,SMP-2013,Upright height,3.600 ±.010,1,Front,3.59,3.61,in,measure
 SMP-2013.pdf,SMP-2013,Base thickness,.313 ±.005,1,Front,0.308,0.318,in,measure
 SMP-2013.pdf,SMP-2013,Upright thickness,.313 ±.005,1,Front,0.308,0.318,in,measure
-SMP-2013.pdf,SMP-2013,Bend angle,90° ±1°,1,Front,,,,verify
+SMP-2013.pdf,SMP-2013,Bend angle,90° ±1°,1,Front,89.0,91.0,°,measure
 SMP-2013.pdf,SMP-2013,Bracket width,1.500 ±.010,1,Side,1.49,1.51,in,measure
 SMP-2013.pdf,SMP-2013,Base hole diameter,2X Ø.257 ±.005 THRU BASE,2,Top,0.252,0.262,in,measure
 SMP-2013.pdf,SMP-2013,Upright slot width,SLOT .386 ±.003 WIDE,1,Side,0.383,0.389,in,measure
@@ -144,12 +144,12 @@ SMP-2018.pdf,SMP-2018,Base length,120.0 ±0.2,1,Front,119.8,120.2,mm,measure
 SMP-2018.pdf,SMP-2018,Upright height,108.0 ±0.3,1,Front,107.7,108.3,mm,measure
 SMP-2018.pdf,SMP-2018,Base thickness,5.0 ±0.1,1,Front,4.9,5.1,mm,measure
 SMP-2018.pdf,SMP-2018,Upright thickness,5.0 ±0.1,1,Front,4.9,5.1,mm,measure
-SMP-2018.pdf,SMP-2018,Bend angle,90° ±1°,1,Front,,,,verify
+SMP-2018.pdf,SMP-2018,Bend angle,90° ±1°,1,Front,89.0,91.0,°,measure
 SMP-2018.pdf,SMP-2018,Bracket width,50.0 ±0.2,1,Side,49.8,50.2,mm,measure
 SMP-2018.pdf,SMP-2018,Base hole diameter,2X Ø6.6 ±0.1 THRU BASE,2,Top,6.5,6.7,mm,measure
 SMP-2018.pdf,SMP-2018,Upright slot width,SLOT 9.9 ±0.1 WIDE,1,Side,9.8,10.0,mm,measure
 SMP-2018.pdf,SMP-2018,Material,Material: 1018 cold-rolled steel,1,,,,,verify
-SMP-2018.pdf,SMP-2018,Edge chamfer,1.5 X 45° ±1° CHAM,1,Side,,,,verify
+SMP-2018.pdf,SMP-2018,Edge chamfer,1.5 X 45° ±1° CHAM,1,Side,44.0,46.0,°,measure
 SMP-2018.pdf,SMP-2018,Side hole diameter,Ø4.2 ±0.05 THRU,1,Side,4.15,4.25,mm,measure
 SMP-2019.pdf,SMP-2019,Diameter A,Ø1.500 ±.003,1,Side,1.497,1.503,in,measure
 SMP-2019.pdf,SMP-2019,Length A,2.167 ±.015,1,Side,2.152,2.182,in,measure
@@ -185,7 +185,7 @@ SMP-2023.pdf,SMP-2023,Base length,3.500 ±.005,1,Front,3.495,3.505,in,measure
 SMP-2023.pdf,SMP-2023,Upright height,2.625 ±.010,1,Front,2.615,2.635,in,measure
 SMP-2023.pdf,SMP-2023,Base thickness,.250 ±.003,1,Front,0.247,0.253,in,measure
 SMP-2023.pdf,SMP-2023,Upright thickness,.250 ±.005,1,Front,0.245,0.255,in,measure
-SMP-2023.pdf,SMP-2023,Bend angle,90° ±0.5°,1,Front,,,,verify
+SMP-2023.pdf,SMP-2023,Bend angle,90° ±0.5°,1,Front,89.5,90.5,°,measure
 SMP-2023.pdf,SMP-2023,Bracket width,2.000 ±.015,1,Side,1.985,2.015,in,measure
 SMP-2023.pdf,SMP-2023,Base hole diameter,2X Ø.257 ±.002 THRU BASE,2,Top,0.255,0.259,in,measure
 SMP-2023.pdf,SMP-2023,Upright slot width,SLOT .386 ±.003 WIDE,1,Side,0.383,0.389,in,measure
@@ -201,7 +201,7 @@ SMP-2024.pdf,SMP-2024,Overall length,130.0 ±0.3,1,Side,129.7,130.3,mm,measure
 SMP-2024.pdf,SMP-2024,End chamfers,2X 1.0 X 45° CHAM,2,Side,,,,verify
 SMP-2024.pdf,SMP-2024,Runout,RUNOUT 0.05 TO DATUM A,1,Side,,,,verify
 SMP-2024.pdf,SMP-2024,Material,Material: Delrin acetal,1,,,,,verify
-SMP-2024.pdf,SMP-2024,Edge chamfer,1.5 X 45° ±1° CHAM,1,Side,,,,verify
+SMP-2024.pdf,SMP-2024,Edge chamfer,1.5 X 45° ±1° CHAM,1,Side,44.0,46.0,°,measure
 SMP-2024.pdf,SMP-2024,Side hole diameter,Ø4.2 ±0.05 THRU,1,Side,4.15,4.25,mm,measure
 SMP-2025.pdf,SMP-2025,Block length,3.000 ±.005,1,Top,2.995,3.005,in,measure
 SMP-2025.pdf,SMP-2025,Block width,2.100 ±.010,1,Top,2.09,2.11,in,measure
@@ -230,7 +230,7 @@ SMP-2028.pdf,SMP-2028,Base length,4.000 ±.005,1,Front,3.995,4.005,in,measure
 SMP-2028.pdf,SMP-2028,Upright height,3.600 ±.010,1,Front,3.59,3.61,in,measure
 SMP-2028.pdf,SMP-2028,Base thickness,.250 ±.005,1,Front,0.245,0.255,in,measure
 SMP-2028.pdf,SMP-2028,Upright thickness,.250 ±.003,1,Front,0.247,0.253,in,measure
-SMP-2028.pdf,SMP-2028,Bend angle,90° ±0.5°,1,Front,,,,verify
+SMP-2028.pdf,SMP-2028,Bend angle,90° ±0.5°,1,Front,89.5,90.5,°,measure
 SMP-2028.pdf,SMP-2028,Bracket width,1.500 ±.015,1,Side,1.485,1.515,in,measure
 SMP-2028.pdf,SMP-2028,Base hole diameter,2X Ø.281 ±.005 THRU BASE,2,Top,0.276,0.286,in,measure
 SMP-2028.pdf,SMP-2028,Upright slot width,SLOT .422 ±.003 WIDE,1,Side,0.419,0.425,in,measure
@@ -251,7 +251,7 @@ SMP-2030.pdf,SMP-2030,Tapped holes,4X M6x1.0-6H ▽12,4,Top,,,,verify
 SMP-2030.pdf,SMP-2030,Pocket depth,POCKET 12.8 ±0.1 DP,1,Top,12.7,12.9,mm,measure
 SMP-2030.pdf,SMP-2030,Block height,38.5 ±0.1,1,Front,38.4,38.6,mm,measure
 SMP-2030.pdf,SMP-2030,Material,Material: 7075-T6 aluminum,1,,,,,verify
-SMP-2030.pdf,SMP-2030,Edge chamfer,1.5 X 45° ±1° CHAM,1,Side,,,,verify
+SMP-2030.pdf,SMP-2030,Edge chamfer,1.5 X 45° ±1° CHAM,1,Side,44.0,46.0,°,measure
 SMP-2030.pdf,SMP-2030,Side hole diameter,Ø4.2 ±0.05 THRU,1,Side,4.15,4.25,mm,measure
 SMP-2031.png,SMP-2031,Overall length,5.000 ±.010,1,Top,4.99,5.01,in,measure
 SMP-2031.png,SMP-2031,Overall width,4.000 ±.005,1,Top,3.995,4.005,in,measure
@@ -271,7 +271,7 @@ SMP-2033.png,SMP-2033,Base length,110.0 ±0.2,1,Front,109.8,110.2,mm,measure
 SMP-2033.png,SMP-2033,Upright height,66.0 ±0.3,1,Front,65.7,66.3,mm,measure
 SMP-2033.png,SMP-2033,Base thickness,8.0 ±0.1,1,Front,7.9,8.1,mm,measure
 SMP-2033.png,SMP-2033,Upright thickness,8.0 ±0.1,1,Front,7.9,8.1,mm,measure
-SMP-2033.png,SMP-2033,Bend angle,90° ±1°,1,Front,,,,verify
+SMP-2033.png,SMP-2033,Bend angle,90° ±1°,1,Front,89.0,91.0,°,measure
 SMP-2033.png,SMP-2033,Bracket width,55.0 ±0.2,1,Side,54.8,55.2,mm,measure
 SMP-2033.png,SMP-2033,Base hole diameter,2X Ø6.6 ±0.1 THRU BASE,2,Top,6.5,6.7,mm,measure
 SMP-2033.png,SMP-2033,Upright slot width,SLOT 9.9 ±0.1 WIDE,1,Side,9.8,10.0,mm,measure
@@ -312,7 +312,7 @@ SMP-2038.png,SMP-2038,Base length,5.000 ±.010,1,Front,4.99,5.01,in,measure
 SMP-2038.png,SMP-2038,Upright height,4.500 ±.010,1,Front,4.49,4.51,in,measure
 SMP-2038.png,SMP-2038,Base thickness,.250 ±.003,1,Front,0.247,0.253,in,measure
 SMP-2038.png,SMP-2038,Upright thickness,.250 ±.003,1,Front,0.247,0.253,in,measure
-SMP-2038.png,SMP-2038,Bend angle,90° ±1°,1,Front,,,,verify
+SMP-2038.png,SMP-2038,Bend angle,90° ±1°,1,Front,89.0,91.0,°,measure
 SMP-2038.png,SMP-2038,Bracket width,1.500 ±.010,1,Side,1.49,1.51,in,measure
 SMP-2038.png,SMP-2038,Base hole diameter,2X Ø.281 ±.005 THRU BASE,2,Top,0.276,0.286,in,measure
 SMP-2038.png,SMP-2038,Upright slot width,SLOT .422 ±.003 WIDE,1,Side,0.419,0.425,in,measure
@@ -352,7 +352,7 @@ SMP-2043.png,SMP-2043,Base length,4.000 ±.015,1,Front,3.985,4.015,in,measure
 SMP-2043.png,SMP-2043,Upright height,3.000 ±.015,1,Front,2.985,3.015,in,measure
 SMP-2043.png,SMP-2043,Base thickness,.250 ±.005,1,Front,0.245,0.255,in,measure
 SMP-2043.png,SMP-2043,Upright thickness,.250 ±.005,1,Front,0.245,0.255,in,measure
-SMP-2043.png,SMP-2043,Bend angle,90° ±0.5°,1,Front,,,,verify
+SMP-2043.png,SMP-2043,Bend angle,90° ±0.5°,1,Front,89.5,90.5,°,measure
 SMP-2043.png,SMP-2043,Bracket width,1.500 ±.010,1,Side,1.49,1.51,in,measure
 SMP-2043.png,SMP-2043,Base hole diameter,2X Ø.257 ±.002 THRU BASE,2,Top,0.255,0.259,in,measure
 SMP-2043.png,SMP-2043,Upright slot width,SLOT .386 ±.003 WIDE,1,Side,0.383,0.389,in,measure
@@ -393,7 +393,7 @@ SMP-2048.jpg,SMP-2048,Base length,110.0 ±0.3,1,Front,109.7,110.3,mm,measure
 SMP-2048.jpg,SMP-2048,Upright height,82.5 ±0.1,1,Front,82.4,82.6,mm,measure
 SMP-2048.jpg,SMP-2048,Base thickness,5.0 ±0.1,1,Front,4.9,5.1,mm,measure
 SMP-2048.jpg,SMP-2048,Upright thickness,5.0 ±0.1,1,Front,4.9,5.1,mm,measure
-SMP-2048.jpg,SMP-2048,Bend angle,90° ±0.5°,1,Front,,,,verify
+SMP-2048.jpg,SMP-2048,Bend angle,90° ±0.5°,1,Front,89.5,90.5,°,measure
 SMP-2048.jpg,SMP-2048,Bracket width,60.0 ±0.2,1,Side,59.8,60.2,mm,measure
 SMP-2048.jpg,SMP-2048,Base hole diameter,2X Ø6.6 ±0.1 THRU BASE,2,Top,6.5,6.7,mm,measure
 SMP-2048.jpg,SMP-2048,Upright slot width,SLOT 9.9 ±0.1 WIDE,1,Side,9.8,10.0,mm,measure

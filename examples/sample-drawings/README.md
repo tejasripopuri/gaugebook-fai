@@ -13,18 +13,24 @@ These are 50 **fictional** training drawings for testing uploads in Gaugebook. N
 - **`drawings.json`**: one line per drawing: family, units, sheets and callout counts.
 - **`generate.py`**: recreates the set exactly with `python3 generate.py`. Needs reportlab, Pillow and poppler's `pdftoppm`.
 
-## How the app handled them (tested 24 Nov 2026)
+## How the app handled them
 
-All 50 were uploaded through the app's **Upload drawing** button into one account. The app read every sheet automatically, in 4–10 seconds per drawing. "Found" means the app proposed the callout **with exactly the right limits** before any inspector edits.
+All 50 were uploaded through the app's **Upload drawing** button into one account. The app read every sheet automatically, in 4–10 seconds per drawing. "Found" means the app proposed the callout **with exactly the right limits** before any inspector edits. 327 callouts have numeric limits.
 
-| Format | Drawings | Toleranced callouts found |
-|---|---|---|
-| PDF (text inside the file) | 25 | **152 / 152 (100%)** |
-| PDF, two sheets | 5 | **37 / 37 (100%)** |
-| PNG image | 15 | 1 / 91 (1%) |
-| JPEG "scan" | 5 | 1 / 32 (3%) |
+| Format | Drawings | Found: before OCR repair (24 Nov) | Found: with OCR repair (25 Nov) |
+|---|---|---|---|
+| PDF (text inside the file) | 25 | 157 / 157 (100%) | **157 / 157 (100%)** |
+| PDF, two sheets | 5 | 43 / 43 (100%) | **43 / 43 (100%)** |
+| PNG image | 15 | 1 / 94 (1%) | **62 / 94 (66%)** |
+| JPEG "scan" | 5 | 1 / 33 (3%) | **23 / 33 (70%)** |
 
-- **PDFs:** the app uses the text embedded in the file, so every toleranced callout came out with the right limits. It also proposed 11 limits that aren't in the answer key; review those before confirming.
-- **Images (PNG/JPEG):** the app places balloons on most callouts, but OCR misreads the symbols. `±` comes out as `+`, and `Ø` comes out as `@` or `9`, so `5.000 ±.010` is read as `5.000 +.010`. The app deliberately doesn't guess limits from text like that. The inspector compares each proposal with the source crop and types the tolerance. That's expected behaviour, but it means image uploads need noticeably more manual entry than PDFs.
+- **PDFs:** the app uses the text embedded in the file, so every toleranced callout comes out with the right limits.
+- **Images:** OCR reads `±` as `+` and `Ø` as `@`. `repairOcrText` in `public/callouts.mjs` corrects these, but only when the reading is otherwise intact. It leaves alone:
+  - one-sided tolerances, which keep their `/-`
+  - values that also lost their decimal point
+  - values stuck to stray characters
+  - `Ø` misread as the digit `9`
+
+  For those, the app proposes no limits rather than wrong ones, so the inspector types them. The repair added no wrong limits in this test.
 
 **Recommendation:** ask suppliers and customers for the original PDF export rather than a scan or screenshot whenever possible.

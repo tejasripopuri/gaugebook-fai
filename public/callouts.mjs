@@ -56,3 +56,19 @@ export function propose(text, angular=null){
     return {source:source.trim(),bounds:bounds?.map(x=>Number(x.toFixed(10)))??null,count};
   });
 }
+
+// Image OCR (not PDF text) commonly misreads "±" as "+" and "Ø" as "@". A one-sided tolerance
+// always keeps its "/-" part, so a lone "+tolerance" after a value is read as "±". Other
+// misreadings (e.g. "Ø" as the digit 9) are left alone: guessing would invent numbers.
+export function repairOcrText(text){
+  const num="(?:\\d+(?:\\.\\d*)?|\\.\\d+)";
+  return text
+    .replace(/@\s*(?=[.\d])/g,"Ø")
+    // tolerance: a decimal number (".005", "0.1") or whole degrees ("1°"), read completely
+    .replace(new RegExp("("+num+"(?:\\s*°)?)\\s*\\+\\s*((?:\\d*\\.\\d+|\\d+(?=\\s*°))(?![\\d.])(?:\\s*°)?)(?!\\s*(?:/\\s*)?[-−]\\s*[.\\d])","g"),(match,value,tol,at,all)=>{
+      // Skip readings that also lost a decimal point (".500" read as "500") or sit against
+      // stray characters ("O1343", "{1.0"): no limits beats wrong limits.
+      const plausible=/[.°]/.test(value)&&(at===0||/[\sØR(]/.test(all[at-1]));
+      return plausible&&parseFloat(tol)>0?value+" ±"+tol:match;
+    });
+}

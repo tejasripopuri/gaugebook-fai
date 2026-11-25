@@ -180,7 +180,7 @@ def add(p, feature, text, count=1, view="", unit=None):
     if m:
         bounds = [float(m[1]) - float(m[3]), float(m[1]) + float(m[2])]
     else:
-        m = re.search(num + r"\s*±\s*" + num, text)
+        m = re.search(num + r"\s*°?\s*±\s*" + num, text)
         if m:
             bounds = [float(m[1]) - float(m[2]), float(m[1]) + float(m[2])]
     if bounds and "°" in text:
