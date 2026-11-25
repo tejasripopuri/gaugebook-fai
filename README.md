@@ -27,7 +27,7 @@ The source tree contains the running app, test suite, CI workflow and example fo
 - **Sign-in:** `public/auth.html` handles sign-in and account creation.
 - **Sync:** `public/boot.mjs` runs before each page. It sends signed-out visitors to sign in, loads the user's saved data from the server, and saves every later change to `gaugebook-*` browser storage back to the server.
 - **Header:** shows a save-status chip and **Sign out**. Changes made offline are queued and sent when the connection returns.
-- **Drawings:** `public/uploads.mjs` caches drawings in the browser and uploads them to the account. The workspace page lists the user's uploaded drawings.
+- **Drawings:** `public/uploads.mjs` caches drawings in the browser and uploads them to the account. Uploading the same file again reopens its inspection.
 
 `server.mjs` serves the app and the API in `api/`. Data is kept in **PostgreSQL** (`lib/db.mjs`):
 
