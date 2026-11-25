@@ -98,13 +98,14 @@ export function drawingLinearDefaults(lines){
 }
 export const definesGeneralTolerance=text=>[...text.matchAll(generalPattern)].some(m=>generalRule(m));
 
-// A dimension printed without its own tolerance (basic ones included) takes the title-block
-// tolerance for its number of decimal places. Reference dimensions (REF or in brackets) are not inspected and stay as they are.
+// A plain dimension printed without its own tolerance takes the title-block tolerance for its
+// number of decimal places. Basic and reference dimensions never do (see dimensionKind). Reference dimensions (REF or in brackets) are not inspected and stay as they are.
 export function withGeneralTolerance(proposal,defaults){
   if(proposal.bounds||proposal.unit==="°"||!defaults?.size)return proposal;
   const source=proposal.source.trim();
   if(/\bREF\b|^\(.*\)$/i.test(source))return proposal;
-  const m=source.match(/^(?:\d+\s*[xX×]\s*)?(?:[Ø⌀]|R)?\s*(\d+(?:\.(\d*))?|\.(\d+))(?:\s+(?:THRU|TYP|DP|DEEP|BSC|BASIC))*$/i);
+  if(dimensionKind(source))return proposal; // basic or reference: the dimension only
+  const m=source.match(plainDimension);
   if(!m)return proposal;
   const rule=defaults.get((m[2]??m[3]??"").length);
   if(!rule)return proposal;
@@ -114,4 +115,40 @@ export function withGeneralTolerance(proposal,defaults){
   const written=source.slice(0,at+m[1].length)+" ±"+(rule.tolText??String(rule.tol))+source.slice(at+m[1].length);
   return {...proposal,source:written,generalTolerance:rule.label,
     bounds:[nominal-rule.tol,nominal+rule.tol].map(x=>Number(x.toFixed(10)))};
+}
+
+// A number printed as a dimension, optionally with a count ("4X"), Ø/R and THRU/TYP/DP.
+const plainDimension=/^(?:\d+\s*[xX×]\s*)?(?:[Ø⌀]|R)?\s*(\d+(?:\.(\d*))?|\.(\d+))(?:\s+(?:THRU|TYP|DP|DEEP))*$/i;
+const numberIn=s=>{const m=s.match(/(\d+(?:\.\d*)?|\.\d+)/);return m?Number(m[1]):null;};
+
+// Which untoleranced dimensions must NOT take the title-block tolerance:
+//  "reference": in parentheses "(2.000)" or marked REF
+//  "basic":     marked BSC/BASIC, drawn in a box, or listed in a note that calls them basic
+// Returns null for an ordinary dimension. ctx: {boxed: ()=>bool, basicValues: Set<number>}
+export function dimensionKind(source,ctx={}){
+  const s=String(source).trim();
+  if(/^\(\s*(?:\d+\s*[xX×]\s*)?(?:[Ø⌀]|R)?\s*(?:\d+(?:\.\d*)?|\.\d+)\s*\)$/.test(s)||/^[^±]*\d[^±]*\bREF\b/i.test(s))return "reference";
+  if(/^[^±]*\d[^±]*\b(?:BSC|BASIC)\b/i.test(s))return "basic";
+  if(/^\[\s*(?:[Ø⌀]|R)?\s*(?:\d+(?:\.\d*)?|\.\d+)\s*\]$/.test(s))return "basic (boxed)"; // OCR reads a box as [ ]
+  if(!plainDimension.test(s))return null;
+  if(ctx.basicValues?.has(numberIn(s)))return "basic (note)";
+  if(ctx.boxed?.())return "basic (boxed)";
+  return null;
+}
+
+// Values a drawing note declares basic, e.g. "5. DIMENSIONS 3.000, 2.000, 5.000 AND 3.000 LOCATING
+// HOLES AND BORE ARE BASIC." Notes may wrap over several lines; each numbered note is read whole.
+export function basicValuesFromNotes(lines){
+  const text=lines.map(l=>l.text).join(" ").replace(/\s+/g," ");
+  const values=new Set();
+  for(const note of text.split(/\s(?=\d{1,2}\.\s+[A-Z])/)){
+    const at=note.search(/\bBASIC\b/i);
+    if(at<0||!/\bDIMENSIONS?\b/i.test(note))continue;
+    // the note ends with the sentence that says BASIC (a full stop not followed by a digit)
+    const end=note.slice(at).search(/\.(?!\d)/);
+    const sentence=note.slice(0,end<0?note.length:at+end).replace(/^\d{1,2}\.\s+/,"");
+    if(sentence.length>300)continue;
+    for(const m of sentence.matchAll(/(?<![\d.])(\d*\.\d+)(?![\d.])/g))values.add(Number(m[1]));
+  }
+  return values;
 }

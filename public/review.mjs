@@ -3,7 +3,7 @@ import {matchPracticeImage} from "./practice-match.mjs";
 import {practiceLayout} from "./practice-views.mjs";
 import {detectViews,inside} from "./drawing-areas.mjs";
 import {drawingFile} from "./uploads.mjs";
-import {openSheets,dimensionLines,verifiedImageLines} from "./image-reader.mjs";
+import {openSheets,dimensionLines,verifiedImageLines,boxDetector} from "./image-reader.mjs";
 import {generalRows} from "./general-plan.mjs";
 import {judge,summarize} from "./plan.mjs";
 import {makeDraggable} from "./drag-pins.mjs";
@@ -31,7 +31,13 @@ function add(proposal,x,y){
     bounds:proposal.bounds,unit:"",confirmed:false,category:"Drawing requirement",repeats:Array.from({length:proposal.count},(_,i)=>proposal.count===1?"Result":"Occurrence "+(i+1))};
   (inside(areas(),row.xy)?plan.rows:plan.offView).push(row);return row;
 }
+const kindLabel=row=>/^reference/.test(row.basicReason||"")?"Reference":"BASIC";
+function kindNote(row){
+  const why={"reference":"a reference dimension (in brackets or marked REF)","basic":"a basic dimension (marked BSC/BASIC)","basic (note)":"a basic dimension (a drawing note calls it basic)","basic (boxed)":"a basic dimension (drawn in a box)"}[row.basicReason]||"a basic dimension";
+  return "This is "+why+", so it takes no tolerance from the title block. Record the measured value for information.";
+}
 function resultStatus(row,value){
+  if(row.basic)return "Reference"; // basic / reference dimension: recorded for information only
   if(!row.bounds&&!row.confirmed&&row.method!=="attribute")return "Pending";
   return judge(row,value);
 }
@@ -51,7 +57,8 @@ function updateSummary(){
   const done=Array.from({length:doc.count},(_,i)=>plan.approved[i+1]).every(Boolean);
   const status=summarize(done?statuses:[...statuses,"Pending"]);
   el("summary").textContent=status;el("summary").className=status.toLowerCase();
-  el("counts").textContent=statuses.filter(s=>s!=="Pending").length+" of "+statuses.length+" results entered · "+Object.values(plan.approved).filter(Boolean).length+" of "+doc.count+" sheets reviewed";
+  const counted=statuses.filter(s=>s!=="Reference");
+  el("counts").textContent=counted.filter(s=>s!=="Pending").length+" of "+counted.length+" results entered · "+Object.values(plan.approved).filter(Boolean).length+" of "+doc.count+" sheets reviewed";
   el("forms").hidden=false;
 }
 function redraw(){
@@ -90,9 +97,9 @@ function redraw(){
       crop.getContext("2d").drawImage(canvas,x,y,crop.width,crop.height,0,0,crop.width,crop.height);
     }
     el("requirement").value=row.source;
-    el("tolSource").hidden=!row.generalTolerance;
-    el("tolSource").textContent=row.generalTolerance?"Tolerance taken from the title block ("+row.generalTolerance+"). Change it here if this dimension needs a different one.":"";
-    const attribute=!row.bounds&&(row.method==="attribute"||row.confirmed);
+    el("tolSource").hidden=!row.generalTolerance&&!row.basic;
+    el("tolSource").textContent=row.basic?kindNote(row):row.generalTolerance?"Tolerance taken from the title block ("+row.generalTolerance+"). Change it here if this dimension needs a different one.":"";
+    const attribute=!row.basic&&!row.bounds&&(row.method==="attribute"||row.confirmed);
     el("method").value=attribute?"attribute":"numeric";
     const data=state();
     row.repeats.forEach((occ,i)=>{
@@ -102,7 +109,7 @@ function redraw(){
       else {input.inputMode="decimal";input.placeholder="Enter measured value";}
       input.value=data.answers?.[k]??"";
       function show(){
-        const decision=resultStatus(row,input.value);result.textContent=!attribute&&!row.bounds?"Pending · verify the tolerance in Requirement":decision;
+        const decision=resultStatus(row,input.value);result.textContent=row.basic?kindLabel(row)+" · for information, not pass/fail":!attribute&&!row.bounds?"Pending · verify the tolerance in Requirement":decision;
         result.className=decision.toLowerCase();
       }
       input.oninput=()=>{const latest=state();(latest.answers??={})[k]=input.value;localStorage.setItem(key,JSON.stringify(latest));show();updateSummary();};
@@ -213,7 +220,8 @@ el("editor").onsubmit=e=>{
   const method=el("method").value;
   const parsed=propose(source);
   const bounds=method==="attribute"?null:source===r.source&&r.bounds?r.bounds:parsed.length===1?parsed[0].bounds:null;
-  if(method==="numeric"&&!bounds){
+  const keepsKind=r.basic&&source===r.source;
+  if(method==="numeric"&&!bounds&&!keepsKind){
     message("Enter the drawing tolerance in Requirement, for example 2.500 ±.005, then confirm.");return;
   }
   const modified=source!==r.source||JSON.stringify(bounds)!==JSON.stringify(r.bounds)||method==="attribute"&&!r.confirmed&&r.method!=="attribute";
@@ -224,7 +232,7 @@ el("editor").onsubmit=e=>{
       keys.forEach(k=>delete latest.answers[k]);localStorage.setItem(key,JSON.stringify(latest));
     }
   }
-  Object.assign(r,{name:r.name===r.source||!r.source?source:r.name,source,method,bounds,confirmed:true,generalTolerance:source===r.source?r.generalTolerance:undefined});
+  Object.assign(r,{name:r.name===r.source||!r.source?source:r.name,source,method,bounds,confirmed:true,generalTolerance:source===r.source?r.generalTolerance:undefined,basic:keepsKind||undefined,basicReason:keepsKind?r.basicReason:undefined});
   changed();redraw();message("Characteristic confirmed.");
 };
 el("delete").onclick=()=>{const r=active();if(!confirm("Delete this balloon and renumber the remaining entries?"))return;
@@ -257,6 +265,7 @@ async function scan(){
       row.unplaced=off;row.sourceBox=proposal.sourceBox;
       if(proposal.generalTolerance)row.generalTolerance=proposal.generalTolerance;
       if(proposal.fromPdfText)row.fromPdfText=true;
+      if(proposal.basic){row.basic=true;row.basicReason=proposal.basicReason;}
       if(off&&plan.rows.includes(row)){plan.rows.splice(plan.rows.indexOf(row),1);plan.offView.push(row);}
     }
     const layout=practice||await matchPracticeImage(canvas);
@@ -276,7 +285,7 @@ async function scan(){
       plan.areas[page]=detectViews(canvas,lines);
       partition();
       progress(.97,"Numbering balloons");await new Promise(requestAnimationFrame);
-      for(const row of generalRows(lines,areas(),canvas.width,canvas.height))insert(row,...row.xy,row.off);
+      for(const row of generalRows(lines,areas(),canvas.width,canvas.height,boxDetector(canvas)))insert(row,...row.xy,row.off);
       (plan.generalVersion??={})[page]=3;
     }
     sortRows();(plan.dimensionOnly??={})[page]=true;plan.scanned[page]=true;selected=onPage()[0]?.id;changed();

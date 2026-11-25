@@ -145,3 +145,19 @@ export function verifiedImageLines(ocr,embedded){
   }
   return [...combined,...ocr.filter(line=>!covered(line))];
 }
+
+// Basic dimensions are drawn inside a box. Returns bbox => true when dark lines enclose the text
+// on all four sides (dimension and extension lines only ever cross one pair of sides).
+export function boxDetector(canvas){
+  const W=canvas.width,H=canvas.height;let data;
+  const dark=(x,y)=>{if(x<0||y<0||x>=W||y>=H)return false;const i=(y*W+x)*4;return data[i]<140&&data[i+1]<140&&data[i+2]<140;};
+  return b=>{
+    data??=canvas.getContext("2d",{willReadFrequently:true}).getImageData(0,0,W,H).data;
+    const x0=Math.round(b.x0),x1=Math.round(b.x1),y0=Math.round(b.y0),y1=Math.round(b.y1),w=x1-x0,h=y1-y0;
+    if(w<4||h<4)return false;
+    const reach=Math.max(4,Math.round(Math.min(w,h)*.9));
+    const across=(from,to)=>{for(let y=from;y<=to;y++){let n=0;for(let x=x0;x<=x1;x++)if(dark(x,y))n++;if(n>=.85*(w+1))return true;}return false;};
+    const down=(from,to)=>{for(let x=from;x<=to;x++){let n=0;for(let y=y0;y<=y1;y++)if(dark(x,y))n++;if(n>=.85*(h+1))return true;}return false;};
+    return across(y0-reach,y0+1)&&across(y1-1,y1+reach)&&down(x0-reach,x0+1)&&down(x1-1,x1+reach);
+  };
+}

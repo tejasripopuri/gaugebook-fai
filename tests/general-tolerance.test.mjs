@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {drawingLinearDefaults,definesGeneralTolerance,withGeneralTolerance,propose,drawingAngleDefault} from "../public/callouts.mjs";
+import {drawingLinearDefaults,definesGeneralTolerance,withGeneralTolerance,propose,drawingAngleDefault,dimensionKind,basicValuesFromNotes} from "../public/callouts.mjs";
 
 const lines=t=>t.map(text=>({text}));
 test("title-block general tolerances are read by decimal places",()=>{
@@ -30,8 +30,31 @@ test("untoleranced dimensions take the title-block tolerance",()=>{
   assert.deepEqual(apply("3.00").bounds,[2.99,3.01]);
   assert.deepEqual(apply("4X Ø.281 THRU").bounds,[.276,.286]);
   assert.deepEqual(apply("R.250").bounds,[.245,.255]);
-  assert.deepEqual(apply("5.000 BSC").bounds,[4.995,5.005]);   // basic too, as requested for uploads
+  assert.equal(apply("5.000 BSC").bounds,null);               // basic: the dimension only
   assert.deepEqual(apply("6.000 ±.010").bounds,[5.99,6.01]);   // its own tolerance wins
   for(const t of ["(2.000)","2.000 REF","3.0","45°","MATERIAL 6061"])assert.equal(apply(t).bounds??null,propose(t)[0].bounds??null,t);
   assert.equal(withGeneralTolerance(propose("2.000")[0],new Map()).bounds,null);  // no title block, no guess
+});
+
+test("basic and reference dimensions keep just the dimension",()=>{
+  // SMP-1001 note 5 wraps over three lines
+  const basic=basicValuesFromNotes(lines(["5. DIMENSIONS 3.000, 2.000, 5.000 AND","3.000 LOCATING HOLES AND BORE ARE","BASIC.","6. INTERPRET PER ASME Y14.5-2018.","4. BREAK ALL SHARP EDGES .005-.015."]));
+  assert.deepEqual([...basic].sort(),[2,3,5]);
+  assert.equal(basicValuesFromNotes(lines(["4. BREAK ALL SHARP EDGES .005-.015.","ALL MACHINED SURFACES 63 Ra MAX."])).size,0);
+  // the note's sentence ends at "BASIC." even when other drawing text follows it in reading order
+  assert.deepEqual([...basicValuesFromNotes(lines(["2. DIMENSION 2.500 IS BASIC.","GENERAL TOLERANCES","3.000","5.000"]))],[2.5]);
+  assert.deepEqual([...basicValuesFromNotes(lines(["3. BASIC DIMENSIONS: 1.250 AND 4.000.","6.000 ±.010"]))].sort(),[1.25,4]);
+  assert.equal(dimensionKind("[5.000]"),"basic (boxed)");
+  const ctx={basicValues:basic};
+  assert.equal(dimensionKind("2.000",ctx),"basic (note)");
+  assert.equal(dimensionKind("1.250",ctx),null);
+  assert.equal(dimensionKind("1.250",{boxed:()=>true}),"basic (boxed)");
+  assert.equal(dimensionKind("5.000 BSC"),"basic");
+  assert.equal(dimensionKind("5.000 BASIC"),"basic");
+  assert.equal(dimensionKind("(2.000)"),"reference");
+  assert.equal(dimensionKind("(Ø.500)"),"reference");
+  assert.equal(dimensionKind("2.000 REF"),"reference");
+  assert.equal(dimensionKind("6.000 ±.010",{boxed:()=>true}),null);   // has its own tolerance
+  const d=drawingLinearDefaults(lines([".XX ±.01  .XXX ±.005"]));
+  for(const s of ["(2.000)","2.000 REF","5.000 BSC"])assert.equal(withGeneralTolerance(propose(s)[0],d).bounds??null,null,s);
 });
