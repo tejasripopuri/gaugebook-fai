@@ -50,7 +50,10 @@ export function generalRows(lines,areas,width,height,boxed){
       .map(p=>prose||inPanel?p:classify(p,line));
     for(const p of proposals){
       const anchor=isDim&&!prose&&!remoteTag&&!inPanel?anchorFor(areas,...point):null;
-      const xy=anchor?place(anchor,areas,used):point;
+      // Only callouts on the drawing views get balloons. Text beside the drawing (notes, requirement
+      // lists, tables, title block) is ignored; the inspector can still add a balloon by hand.
+      if(!anchor)continue;
+      const xy=place(anchor,areas,used);
       if(anchor)used.push(xy);
       rows.push({...p,sourceBox:[line.bbox.x0/width,line.bbox.y0/height,line.bbox.x1/width,line.bbox.y1/height],xy,off:!anchor,name:tag?tag[1]+" · "+p.source:p.source,fromPdfText:!!line.fromPdfText});
     }
