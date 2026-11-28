@@ -286,12 +286,20 @@ async function scan(){
       partition();
       progress(.97,"Numbering balloons");await new Promise(requestAnimationFrame);
       for(const row of generalRows(lines,areas(),canvas.width,canvas.height,boxDetector(canvas)))insert(row,...row.xy,row.off);
-      (plan.generalVersion??={})[page]=3;
+      (plan.generalVersion??={})[page]=READER_VERSION;
     }
     sortRows();(plan.dimensionOnly??={})[page]=true;plan.scanned[page]=true;selected=onPage()[0]?.id;changed();
     message(plan.imageMatches?.[page]?"Automatic numbering complete. Image layout matches "+plan.imageMatches[page]+". Check each proposed value against the uploaded revision before confirming it.":onPage().length?"Automatic numbering complete. Review the balloons against the drawing.":"No dimensions could be placed confidently. Check the original sheet and any unplaced text.");
   }catch(e){message("Image reading failed. Click the drawing to enter a callout manually, or retry. "+e.message);}
   finally{scanning=false;el("scanBar").hidden=true;redraw();}
+}
+// Version of the drawing-reading rules. A sheet read by an older version is read again when it is
+// opened, as long as nobody has confirmed a balloon or entered a result on it yet.
+const READER_VERSION=4;
+function untouched(n){
+  const answers=state().answers||{};
+  const rows=[...plan.rows,...plan.offView].filter(r=>r.sheet===n);
+  return !plan.approved[n]&&rows.every(r=>!r.confirmed&&!r.manual&&!r.moved&&r.repeats.every((_,i)=>!answers[r.id+"-"+i]));
 }
 async function show(n,selection){
   el("sheet").disabled=true;el("scan").disabled=true;
@@ -318,6 +326,13 @@ async function show(n,selection){
       }
     }
     plan.generalVersion[n]=3;save();
+  }
+  if(plan.scanned[n]&&!plan.imageMatches?.[n]&&(plan.generalVersion?.[n]??0)<READER_VERSION){
+    if(untouched(n)){
+      plan.rows=plan.rows.filter(r=>r.sheet!==n);plan.offView=plan.offView.filter(r=>r.sheet!==n);
+      plan.deleted=plan.deleted.filter(({row})=>row.sheet!==n);
+      plan.scanned[n]=false;save();   // the caller reads the sheet again
+    }else message("This sheet was read by an earlier version of the app; your confirmed balloons and results are kept as they are. Press Read sheet image to read it again with the current version.");
   }
   placing=null;el("sheet").value=n;selected=selection??onPage()[0]?.id;redraw();
 }
@@ -347,5 +362,5 @@ try{
     }
     plan.checkedImageLayout=true;save();
   }
-  if(!plan.scanned[1]&&!plan.approved[1])await scan();else message("Saved inspection opened.");
+  if(!plan.scanned[1]&&!plan.approved[1])await scan();else if(!/earlier version/.test(el("message").textContent))message("Saved inspection opened.");
 }catch(e){message("Unable to open drawing. "+e.message);}
