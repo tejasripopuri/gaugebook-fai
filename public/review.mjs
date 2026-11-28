@@ -87,6 +87,7 @@ function redraw(){
     pin.onclick=e=>{e.stopPropagation();selected=r.id;redraw();};el("paper").append(pin);
     if(!placing)makeDraggable(pin,el("paper"),(x,y)=>{r.xy=[x,y];r.moved=true;save();el("resetPins").hidden=false;});
   }
+  requestAnimationFrame(()=>revealSelected());
   el("editor").hidden=!row;el("results").replaceChildren();
   if(row){
     const crop=el("sourceCrop");crop.hidden=!row.sourceBox;
@@ -360,6 +361,42 @@ async function show(n,selection){
 }
 el("sheet").onchange=async e=>{await show(Number(e.target.value));if(!plan.scanned[page]&&!plan.approved[page])await scan();};
 el("scan").onclick=scan;
+
+// ---- zoom: the drawing grows inside a scrolling frame; balloons and clicks use fractions of
+// the drawing, so they stay where they are at any zoom.
+const ZOOMS=[1,1.5,2,3,4,6];
+let zoom=1,centered=null;
+function setZoom(next,at){
+  const view=el("viewport"),paper=el("paper");
+  next=Math.min(ZOOMS.at(-1),Math.max(1,next));
+  const box=view.getBoundingClientRect();
+  const cx=at?at.x-box.left:view.clientWidth/2,cy=at?at.y-box.top:view.clientHeight/2;
+  const fx=(view.scrollLeft+cx)/paper.offsetWidth,fy=(view.scrollTop+cy)/paper.offsetHeight;
+  zoom=next;paper.style.setProperty("--zoom",zoom);
+  view.scrollLeft=fx*paper.offsetWidth-cx;view.scrollTop=fy*paper.offsetHeight-cy;
+  el("zoomLevel").textContent=Math.round(zoom*100)+"%";
+  el("zoomOut").disabled=zoom<=1;el("zoomFit").disabled=zoom<=1;el("zoomIn").disabled=zoom>=ZOOMS.at(-1);
+}
+const step=dir=>dir>0?ZOOMS.find(z=>z>zoom+1e-9)??ZOOMS.at(-1):[...ZOOMS].reverse().find(z=>z<zoom-1e-9)??1;
+el("zoomIn").onclick=()=>setZoom(step(1));
+el("zoomOut").onclick=()=>setZoom(step(-1));
+el("zoomFit").onclick=()=>setZoom(1);
+el("viewport").addEventListener("wheel",e=>{
+  if(!e.ctrlKey&&!e.metaKey)return;   // plain scrolling moves around the drawing; a trackpad pinch arrives with ctrlKey
+  e.preventDefault();setZoom(zoom*Math.exp(-e.deltaY*.0025),{x:e.clientX,y:e.clientY});
+},{passive:false});
+setZoom(1);
+// When zoomed in, bring the selected balloon into view (e.g. after Next pending or the list).
+function revealSelected(){
+  if(zoom<=1||!selected||selected===centered)return;
+  const pin=el("paper").querySelector(".pin.active"),view=el("viewport");
+  if(!pin)return;
+  centered=selected;
+  const p=pin.getBoundingClientRect(),v=view.getBoundingClientRect();
+  if(p.left<v.left||p.right>v.right||p.top<v.top||p.bottom>v.bottom){
+    view.scrollLeft+=p.left+p.width/2-(v.left+v.width/2);view.scrollTop+=p.top+p.height/2-(v.top+v.height/2);
+  }
+}
 window.addEventListener("storage",e=>{if(e.key===key&&canvas)redraw();});
 try{
   const file=await drawingFile(id);if(!file)throw Error("Upload this file in the inspection workspace to open it in this browser.");
