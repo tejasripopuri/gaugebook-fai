@@ -76,7 +76,7 @@ export function joinStacks(lines){
     const [,lead,value,suffix=""]=text.match(/^(.*?)(\d*\.\d+°?|\d+(?:\.\d+)?°?)((?:\s*(?:R|DIA))*)$/)||[,"",text,""];
     const joined=[count&&count.replace(/\s+/g,"")+" ",lead,value,tol&&" "+tol,suffix,words.length?" "+words.join(" "):""].join("").replace(/\s+/g," ").trim();
     const box={x0:Math.min(line.bbox.x0,...parts.map(p=>p.bbox.x0)),y0:line.bbox.y0,x1:Math.max(line.bbox.x1,...parts.map(p=>p.bbox.x1)),y1:below.y1};
-    out.push({...line,text:joined,bbox:box,stacked:true,fromPdfText:line.fromPdfText&&parts.every(p=>p.fromPdfText)});
+    out.push({...line,text:joined,bbox:box,lineH:h,stacked:true,fromPdfText:line.fromPdfText&&parts.every(p=>p.fromPdfText)});
   }
   return out;
 }
@@ -141,17 +141,23 @@ function titleBlock(lines,height){
   return {x0:Math.min(...marks.map(l=>l.bbox.x0)),y0:Math.min(...marks.map(l=>l.bbox.y0))-height*.01};
 }
 
-function place(point,areas,used){
-  // Keep adjacent dimension and depth balloons individually selectable at ordinary zoom.
-  for(let ring=0;ring<5;ring++){
-    const steps=ring?8*ring:1;
-    for(let j=0;j<steps;j++){
-      const angle=j*2*Math.PI/steps;
-      const candidate=[point[0]+ring*.022*Math.cos(angle),point[1]+ring*.028*Math.sin(angle)];
-      if(inside(areas,candidate)&&used.every(p=>Math.hypot((candidate[0]-p[0])/.020,(candidate[1]-p[1])/.026)>=1))return candidate;
-    }
-  }
-  return point;
+// The balloon goes just before the start of its dimension text, level with its first line, so it
+// never covers the value. If that spot is taken by another balloon, is off the sheet or in the border
+// or title block, it tries further left, then after the text, then above and below it.
+const R={x:.012,y:.0155};  // a balloon's half size as a fraction of the sheet, as shown on screen
+// texts (optional): other text on the sheet as [x0,y0,x1,y1] fractions; a balloon must not cover it.
+export function startOfText(line,width,height,used,furniture,texts=[]){
+  const {x0,y0,x1,y1}=line.bbox,h=line.lineH||(y1-y0);
+  const vertical=y1-y0>2.5*(x1-x0)&&!line.stacked;     // text running up the sheet starts at its bottom
+  const cy=(y0+h/2)/height,cx=(x0+x1)/2/width,gap=R.x+.003;
+  const spots=vertical
+    ?[[cx,y1/height+R.y+.003],[cx,y0/height-R.y-.003],[x0/width-gap,(y0+y1)/2/height]]
+    :[[x0/width-gap,cy],[x0/width+R.x*.5,y0/height-R.y-.003],[x1/width+gap,cy],[x0/width+R.x*.5,y1/height+R.y+.003],[x0/width-gap-2*R.x,cy]];
+  const own=[x0/width,y0/height,x1/width,y1/height];
+  const covers=p=>texts.some(b=>b!==own&&!(b[0]===own[0]&&b[1]===own[1])&&p[0]+R.x>b[0]&&p[0]-R.x<b[2]&&p[1]+R.y>b[1]&&p[1]-R.y<b[3]);
+  const free=p=>p[0]>R.x&&p[0]<1-R.x&&p[1]>R.y&&p[1]<1-R.y&&!onFurniture(furniture,p)
+    &&used.every(q=>Math.hypot((p[0]-q[0])/(2*R.x),(p[1]-q[1])/(2*R.y))>=1);
+  return spots.find(p=>free(p)&&!covers(p))||spots.find(free)||spots[0];
 }
 // boxed (optional): bbox => true when the text is drawn inside a box (a basic dimension).
 // furniture (optional): the sheet's frame and title/revision blocks (see sheetFurniture).
@@ -197,6 +203,9 @@ export function generalRows(lines,areas,width,height,boxed,furniture){
     const kind=dimensionKind(p.source,{basicValues,boxed:()=>!!boxed?.(line.bbox)});
     return kind?{...p,basic:true,basicReason:kind}:withGeneralTolerance(p,general);
   };
+  // other text a balloon must not cover (very large boxes are OCR noise over hatching or views)
+  const texts=lines.filter(l=>/\d|[A-Z]{2}/i.test(l.text)&&l.bbox.x1-l.bbox.x0<width*.2&&l.bbox.y1-l.bbox.y0<height*.06)
+    .map(l=>[l.bbox.x0/width,l.bbox.y0/height,l.bbox.x1/width,l.bbox.y1/height]);
   const sideHeadings=lines.filter(l=>/^(?:feature requirements|feature center locations|inspection notes|general notes|hole (?:table|chart)|coordinates|bill of materials|revision history)\s*:?$/i.test(l.text.trim()));
   for(const line of lines){
     const text=line.text.trim(),point=center(line,width,height);
@@ -214,8 +223,8 @@ export function generalRows(lines,areas,width,height,boxed,furniture){
       // Only callouts on the drawing views get balloons. Text beside the drawing (notes, requirement
       // lists, tables, title block) is ignored; the inspector can still add a balloon by hand.
       if(!anchor)continue;
-      const xy=place(anchor,areas,used);
-      if(anchor)used.push(xy);
+      const xy=startOfText(line,width,height,used,furniture,texts);
+      used.push(xy);
       rows.push({...p,sourceBox:[line.bbox.x0/width,line.bbox.y0/height,line.bbox.x1/width,line.bbox.y1/height],xy,off:!anchor,name:tag?tag[1]+" · "+p.source:p.source,fromPdfText:!!line.fromPdfText});
     }
   }

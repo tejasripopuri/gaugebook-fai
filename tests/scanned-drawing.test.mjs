@@ -95,3 +95,18 @@ test("Ø read as 9 is repaired only when the 9 makes the value implausibly large
   assert.deepEqual(texts(["1.800 ±.005","0.300","90.600 ±.002","91.500","91.000"]),["1.800 ±.005","0.300","Ø0.600 ±.002","Ø1.500","Ø1.000"]);
   assert.deepEqual(texts(["95.0","120.5","90.6"]),["95.0","120.5","90.6"]);      // a metric part with large sizes
 });
+
+// ---- where a balloon goes ------------------------------------------------------------------
+import {startOfText} from "../public/general-plan.mjs";
+test("a balloon sits just before the start of its dimension, not on it", () => {
+  const line={text:"1.800 ±.005",bbox:{x0:1000,y0:500,x1:1200,y1:530}},W=2000,H=1500;
+  const [x,y]=startOfText(line,W,H,[]);
+  assert.ok(x<1000/W,"left of the text");assert.ok(x>1000/W-.03,"right next to it");
+  assert.ok(Math.abs(y-515/H)<.002,"level with the text");
+  // if that spot is taken by another balloon it moves on, still clear of the text
+  const [x2,y2]=startOfText(line,W,H,[[x,y]]);
+  assert.ok(y2<500/H&&Math.abs(x2-1000/W)<.02,"just above the start of the text");
+  // a stacked callout: level with its first line
+  const stack={text:".5485 +.0000/-.0005 DIA",bbox:{x0:1000,y0:500,x1:1100,y1:620},lineH:30,stacked:true};
+  assert.ok(Math.abs(startOfText(stack,W,H,[])[1]-515/H)<.002);
+});

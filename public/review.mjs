@@ -1,7 +1,7 @@
 import {propose,drawingAngleDefault} from "./callouts.mjs";
 import {matchPracticeImage} from "./practice-match.mjs";
 import {practiceLayout} from "./practice-views.mjs";
-import {detectViews,inside,sheetFurniture,clipViews,onFurniture} from "./drawing-areas.mjs";
+import {detectViews,nearView,sheetFurniture,clipViews,onFurniture} from "./drawing-areas.mjs";
 import {drawingFile} from "./uploads.mjs";
 import {openSheets,dimensionLines,verifiedImageLines,boxDetector} from "./image-reader.mjs";
 import {generalRows} from "./general-plan.mjs";
@@ -17,7 +17,7 @@ function sortRows(){plan.rows.sort((a,b)=>a.sheet-b.sheet||a.id-b.id);}
 function partition(){
   const all=[...plan.rows,...plan.offView];
   plan.rows=[];plan.offView=[];
-  for(const r of all)(!r.unplaced&&inside(plan.areas[r.sheet]||[],r.xy)?plan.rows:plan.offView).push(r);
+  for(const r of all)(!r.unplaced&&nearView(plan.areas[r.sheet]||[],r.xy)?plan.rows:plan.offView).push(r);
   sortRows();
 }
 const message=text=>el("message").textContent=text;
@@ -29,7 +29,7 @@ function changed(){plan.approved[page]=false;save();}
 function add(proposal,x,y){
   const row={id:plan.next++,sheet:page,xy:[x,y],source:proposal.source,name:proposal.source||"New characteristic",
     bounds:proposal.bounds,unit:"",confirmed:false,category:"Drawing requirement",repeats:Array.from({length:proposal.count},(_,i)=>proposal.count===1?"Result":"Occurrence "+(i+1))};
-  (inside(areas(),row.xy)?plan.rows:plan.offView).push(row);return row;
+  (nearView(areas(),row.xy)?plan.rows:plan.offView).push(row);return row;
 }
 const kindLabel=row=>/^reference/.test(row.basicReason||"")?"Reference":"BASIC";
 function kindNote(row){
@@ -208,7 +208,7 @@ el("attach").onclick=()=>{placing=Number(el("unused").value);message("Click the 
 el("paper").onclick=async e=>{
   if(scanning||e.target!==canvas)return;
   const rect=canvas.getBoundingClientRect(),point=[(e.clientX-rect.left)/rect.width,(e.clientY-rect.top)/rect.height];
-  if(!inside(areas(),point)){message("Place balloons on a detected drawing view.");return;}
+  if(!nearView(areas(),point)){message("Place balloons on or next to a detected drawing view.");return;}
   if(placing){
     const i=plan.offView.findIndex(r=>r.id===placing);
     const [r]=plan.offView.splice(i,1);r.xy=point;r.unplaced=false;plan.rows.push(r);sortRows();selected=r.id;placing=null;
@@ -315,7 +315,7 @@ async function scan(){
 }
 // Version of the drawing-reading rules. A sheet read by an older version is read again when it is
 // opened, as long as nobody has confirmed a balloon or entered a result on it yet.
-const READER_VERSION=7;
+const READER_VERSION=8;
 // A balloon placed by a click on the drawing and never filled in (often a stray click) is not work to keep.
 const empty=r=>r.manual&&!r.source?.trim()&&!r.confirmed&&!r.repeats.some((_,i)=>(state().answers||{})[r.id+"-"+i]);
 const outdated=n=>plan.scanned[n]&&!plan.imageMatches?.[n]&&(plan.generalVersion?.[n]??0)<READER_VERSION;

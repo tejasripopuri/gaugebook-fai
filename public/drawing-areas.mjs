@@ -46,6 +46,11 @@ export function detectViews(canvas,lines){
   }
   return boxes.filter((a,i)=>!boxes.some((b,j)=>i!==j&&a[0]>=b[0]&&a[1]>=b[1]&&a[2]<=b[2]&&a[3]<=b[3]));
 }
+// On a view, or close enough to one to belong to it (dimension text sits just outside the outline).
+// (Text is tied to a view within .058; its balloon sits up to a balloon's width further out.)
+export function nearView(areas,[x,y]){
+  return areas.some(([l,t,r,b])=>Math.hypot(x-Math.max(l,Math.min(r,x)),y-Math.max(t,Math.min(b,y)))<.09);
+}
 export function anchorFor(areas,x,y){
   let best=null,dist=Infinity;
   for(const [l,t,r,b] of areas){
