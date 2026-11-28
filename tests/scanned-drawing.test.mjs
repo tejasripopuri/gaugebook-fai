@@ -70,3 +70,11 @@ test("generalRows drops callouts outside the frame and in the title block", () =
 test("views are clipped to the frame and title blocks are not views", () => {
   assert.deepEqual(clipViews([[.1,.1,.5,.5],[.62,.87,.97,.97]],furniture),[[.15,.1,.5,.5]]);
 });
+
+test("an angle and the tolerance under it stay one callout even when OCR misreads ° and ±", () => {
+  const L=(t,x,y)=>({text:t,bbox:{x0:x,y0:y,x1:x+40,y1:y+14}});
+  for(const [a,b,want] of [["15°","±5°","15° ±5°"],["15°","5°","15° ±5°"],["45o","t5°","45° ±5°"],["450","#5°","45° ±5°"],["45*","+5o","45° ±5°"]])
+    assert.deepEqual(joinStacks([L(a,100,100),L(b,100,116)]).map(l=>l.text),[want]);
+  assert.deepEqual(joinStacks([L(".250",100,100),L("5°",100,116)]).map(l=>l.text),[".250","5°"]);   // not an angle
+  assert.deepEqual(propose("45° ±5°")[0].bounds,[40,50]);
+});
