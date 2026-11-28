@@ -254,7 +254,7 @@ async function scan(){
     // Reading again a sheet that an older version read: drop its unreviewed balloons and keep the
     // ones the inspector confirmed, placed by hand or entered results for.
     const answers=state().answers||{};
-    const reviewed=r=>r.sheet!==page||r.confirmed||r.manual||r.repeats.some((_,i)=>answers[r.id+"-"+i]);
+    const reviewed=r=>r.sheet!==page||r.confirmed||r.manual&&!empty(r)||r.repeats.some((_,i)=>answers[r.id+"-"+i]);
     plan.rows=plan.rows.filter(reviewed);plan.offView=plan.offView.filter(reviewed);
     plan.deleted=plan.deleted.filter(({row})=>row.sheet!==page);
     kept=[...plan.rows,...plan.offView].filter(r=>r.sheet===page);
@@ -315,11 +315,13 @@ async function scan(){
 // Version of the drawing-reading rules. A sheet read by an older version is read again when it is
 // opened, as long as nobody has confirmed a balloon or entered a result on it yet.
 const READER_VERSION=5;
+// A balloon placed by a click on the drawing and never filled in (often a stray click) is not work to keep.
+const empty=r=>r.manual&&!r.source?.trim()&&!r.confirmed&&!r.repeats.some((_,i)=>(state().answers||{})[r.id+"-"+i]);
 const outdated=n=>plan.scanned[n]&&!plan.imageMatches?.[n]&&(plan.generalVersion?.[n]??0)<READER_VERSION;
 function untouched(n){
   const answers=state().answers||{};
   const rows=[...plan.rows,...plan.offView].filter(r=>r.sheet===n);
-  return !plan.approved[n]&&rows.every(r=>!r.confirmed&&!r.manual&&!r.moved&&r.repeats.every((_,i)=>!answers[r.id+"-"+i]));
+  return !plan.approved[n]&&rows.every(r=>!r.confirmed&&(!r.manual||empty(r))&&!r.moved&&r.repeats.every((_,i)=>!answers[r.id+"-"+i]));
 }
 async function show(n,selection){
   el("sheet").disabled=true;el("scan").disabled=true;
@@ -352,7 +354,7 @@ async function show(n,selection){
       plan.rows=plan.rows.filter(r=>r.sheet!==n);plan.offView=plan.offView.filter(r=>r.sheet!==n);
       plan.deleted=plan.deleted.filter(({row})=>row.sheet!==n);
       plan.scanned[n]=false;save();   // the caller reads the sheet again
-    }else message("This sheet was read by an earlier version of the app. Press Read sheet image to read it again: balloons with results are kept, confirmed ones are kept unless they sit in the border or title block, and the rest are replaced.");
+    }else message("The balloons on this sheet are from an older reading. Press Read sheet image to update them: balloons with results are kept, and confirmed ones are kept unless they sit in the border or title block.");
   }
   placing=null;el("sheet").value=n;selected=selection??onPage()[0]?.id;redraw();
 }
