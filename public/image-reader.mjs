@@ -1,5 +1,5 @@
-import {repairOcrText} from "./callouts.mjs";
-import {getDocument,GlobalWorkerOptions,Util} from "./vendor/pdf.min.mjs";
+import {repairOcrText,cleanReading} from "./callouts.mjs";
+import {getDocument,GlobalWorkerOptions,Util,OPS} from "./vendor/pdf.min.mjs";
 import {matchesRaster} from "./vision.mjs";
 GlobalWorkerOptions.workerSrc=new URL("./vendor/pdf.worker.min.mjs",import.meta.url).href;
 const W=1400,H=1082;
@@ -68,26 +68,49 @@ export async function sheetLines(canvas){
   const {data}=await engine.recognize(canvas,{}, {blocks:true});
   return (data.blocks||[]).flatMap(b=>b.paragraphs.flatMap(p=>p.lines));
 }
+// Pixels across the longest side when a PDF page is rendered. Letter/A-size sheets keep 2600;
+// large sheets (C, D, E size) get about 120 px per inch so their small text stays readable.
+export function sheetPixels(points){
+  return Math.round(Math.min(6000,Math.max(2600,points/72*120)));
+}
+// A scanned page is a picture covering most of the page. Its text layer, if any, was added by
+// someone else's OCR and is often garbled ("I .550" for 1.550), so it is not exact CAD text.
+async function isScannedPage(page){
+  const {fnArray,argsArray}=await page.getOperatorList();
+  const {width,height}=page.getViewport({scale:1});
+  let last=null;
+  for(let i=0;i<fnArray.length;i++){
+    const op=fnArray.at(i);
+    if(op===OPS.transform)last=argsArray.at(i);
+    else if((op===OPS.paintImageXObject||op===OPS.paintInlineImageXObject)&&last){
+      const [a,b,c,d]=last;
+      if(Math.abs(a*d-b*c)>=.5*width*height)return true; // the picture spans at least half the page
+    }
+  }
+  return false;
+}
+
 export async function openSheets(file){
   if((await file.slice(0,5).text())==="%PDF-"){
     const doc=await getDocument({data:await file.arrayBuffer(),isEvalSupported:false}).promise;
     return {count:doc.numPages,async labels(pageNumber){
       // Raster geometry locates the views. Embedded labels, when present, resolve OCR glyph ambiguities.
       const page=await doc.getPage(pageNumber),base=page.getViewport({scale:1});
-      const viewport=page.getViewport({scale:2600/Math.max(base.width,base.height)});
+      const viewport=page.getViewport({scale:sheetPixels(Math.max(base.width,base.height))/Math.max(base.width,base.height)});
       const {items}=await page.getTextContent();
+      const scanned=await isScannedPage(page).catch(()=>false);
       const lines=[];
       for(const item of items){
         if(!item.str?.trim())continue;
         const [a,b,c,d,x,y]=Util.transform(viewport.transform,item.transform);
         const length=Math.hypot(a,b)||1,dx=a/length*item.width*viewport.scale,dy=b/length*item.width*viewport.scale;
         const xs=[x,x+dx,x+c*.8,x+dx+c*.8],ys=[y,y+dy,y+d*.8,y+dy+d*.8];
-        lines.push({text:item.str.trim(),bbox:{x0:Math.min(...xs),y0:Math.min(...ys),x1:Math.max(...xs),y1:Math.max(...ys)}});
+        lines.push({text:item.str.trim(),bbox:{x0:Math.min(...xs),y0:Math.min(...ys),x1:Math.max(...xs),y1:Math.max(...ys)},...(scanned&&{scanned:true})});
       }
       return lines;
     },async render(pageNumber){
       const page=await doc.getPage(pageNumber),base=page.getViewport({scale:1});
-      const viewport=page.getViewport({scale:2600/Math.max(base.width,base.height)});
+      const viewport=page.getViewport({scale:sheetPixels(Math.max(base.width,base.height))/Math.max(base.width,base.height)});
       const c=canvas(Math.ceil(viewport.width),Math.ceil(viewport.height));
       await page.render({canvasContext:c.getContext("2d"),viewport,background:"white"}).promise;
       return c;
@@ -124,7 +147,7 @@ async function readBoth(canvas,secondPass){
     const overlaps=upright.some(({bbox:q,text})=>text.trim()===line.text.trim()&&q.x0<box.x1&&q.x1>box.x0&&q.y0<box.y1&&q.y1>box.y0);
     if(!overlaps)upright.push({...line,bbox:box});
   }
-  return upright.map(line=>({...line,text:repairOcrText(line.text)}));
+  return upright.map(line=>({...line,text:repairOcrText(cleanReading(line.text))}));
 }
 
 // Combine text fragments on one dimension line without joining distant table columns.
@@ -135,7 +158,21 @@ export function verifiedImageLines(ocr,embedded){
     const prev=combined.at(-1),p=prev?.bbox,b=item.bbox,h=b.y1-b.y0;
     if(p&&h>0&&Math.abs(p.y1-b.y1)<h*.24&&Math.abs(p.y0-b.y0)<h*.32&&b.x0>=p.x1-h*.15&&b.x0-p.x1<h*.7){
       prev.text+=" "+item.text;p.x1=b.x1;p.y0=Math.min(p.y0,b.y0);
-    }else combined.push({text:item.text,bbox:{...b},fromPdfText:true}); // exact text inside the PDF
+    }else combined.push(item.scanned?{text:repairOcrText(item.text),bbox:{...b}}:{text:item.text,bbox:{...b},fromPdfText:true}); // exact text inside a CAD PDF; a scan's text layer is OCR
+  }
+  // a scan's text layer is OCR: repair it after its fragments are joined ("I" + ".550" -> "1.550")
+  for(const line of combined)if(!line.fromPdfText)line.text=repairOcrText(cleanReading(line.text));
+  // On a scan, both readings are OCR: where they overlap, keep the more complete number
+  // (the text layer's "734", "I 5", "45'" against our "1.734", "15°", "45°").
+  const overlap=(a,b)=>Math.max(0,Math.min(a.x1,b.x1)-Math.max(a.x0,b.x0))*Math.max(0,Math.min(a.y1,b.y1)-Math.max(a.y0,b.y0));
+  const numberIn=t=>(t.match(/\d*\.?\d+°?/g)||[]).sort((x,y)=>y.length-x.length)[0]||"";
+  const better=(mine,theirs)=>{const a=numberIn(mine),b=numberIn(theirs),digits=s=>s.replace(/\D/g,"");
+    return b.length>a.length&&digits(b).includes(digits(a))&&(/[.°]/.test(b)&&!/[.°]/.test(a)||b.length>=a.length+1);};
+  for(const line of combined){
+    if(line.fromPdfText)continue;
+    const area=(line.bbox.x1-line.bbox.x0)*(line.bbox.y1-line.bbox.y0);
+    const twin=ocr.find(o=>overlap(o.bbox,line.bbox)>.3*area&&better(line.text,o.text));
+    if(twin)line.text=twin.text;
   }
   function covered({bbox:b}){
     return combined.some(({bbox:p})=>{

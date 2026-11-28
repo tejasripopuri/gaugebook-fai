@@ -1,0 +1,46 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {repairScanNumbers,cleanReading,repairOcrText,propose} from "../public/callouts.mjs";
+import {joinStacks,generalRows} from "../public/general-plan.mjs";
+
+// Readings taken from a scanned 1985 E-size drawing (its PDF text layer and Tesseract).
+test("scanned numbers are rejoined: a 1 read as I, numbers split by spaces",()=>{
+  for(const [scan,fixed] of [["I .550","1.550"],["I. 738","1.738"],["2.53 I","2.531"],[". I 25",".125"],[". I 00 R",".100 R"],["I . 03 I","1.031"]])
+    assert.equal(repairScanNumbers(scan),fixed);
+  for(const text of ["DIA THRU","COR BRK","ISO 2768","I","DIA I","10.5 ±0.1","1.738",".5485"])
+    assert.equal(repairScanNumbers(text),text);
+});
+test("leader and arrow stubs are trimmed from readings",()=>{
+  assert.equal(cleanReading("<= .370"),".370");
+  assert.equal(cleanReading(".225 —<——|"),".225");
+  assert.equal(repairOcrText(cleanReading("\uFFFD-- . 225 ___,\uFFFD")),".225");
+  for(const text of ["(2.000)","-.005","±.010","#5°","2X"])assert.equal(cleanReading(text),text);
+});
+
+const L=(text,x0,y0,x1)=>({text,bbox:{x0,y0,x1,y1:y0+29}});
+test("a tolerance printed under its dimension stays with it",()=>{
+  const joined=joinStacks([
+    L(".5485",1522,1367,1620),L("+.0000 []]",1525,1397,1696),L("-.0005",1522,1426,1640),L("DIA",1522,1455,1582),
+    L(".218",3633,887,3710),L("+.010",3635,914,3731),L("DIA THRU",3632,945,3790),
+    L(".030 R",3090,2462,3208),L("±.010",3094,2491,3189),L("2X",3090,2521,3128),
+    L("45°",2000,500,2060),L("#5°",1998,529,2060),L("2.531",1800,600,1900),L("REF",1810,629,1870),
+    L(".797",2916,1357,2988),L("±.010",2913,1386,3008),L(".688",2940,1493,3017)]).map(l=>l.text).sort();
+  assert.deepEqual(joined,[".218 ±.010 DIA THRU",".5485 +.0000/-.0005 DIA",".688",".797 ±.010","2.531 REF","2X .030 ±.010 R","45° ±5°"]);
+  assert.deepEqual(propose(".5485 +.0000/-.0005 DIA")[0].bounds,[.548,.5485]);
+  assert.deepEqual(propose("2X .030 ±.010 R")[0].bounds,[.02,.04]);
+  assert.deepEqual(propose("45° ±5°")[0].bounds,[40,50]);
+  assert.deepEqual(propose(".218 ±.010 DIA THRU")[0].bounds,[.208,.228]); // a lone "+" under it was a misread ±
+});
+test("border zones, surface finish marks, the title block and stray tolerances are not ballooned",()=>{
+  const W=4000,H=3000,view=[[.1,.1,.9,.7]];
+  const lines=[
+    // dimensions on the view (inch style: leading decimal point)
+    L(".500",1000,800,1080),L("±.010",1000,829,1090),L(".250",1500,800,1580),L("±.005",1500,829,1590),
+    L(".125",2000,800,2080),L("±.010",2000,829,2090),L(".750",2500,800,2580),L("±.010",2500,829,2590),L(".062",3000,800,3080),
+    // not requirements
+    L("7",600,20,620),L("G",10,900,30),L("250",1200,1200,1260),L("16",1300,1300,1330),L("-.004",1700,1600,1790),
+    L("DRAWN J. WILKE",2900,2400,3200),L("CHK E. LARSON",2900,2450,3200),L("SCALE 4/1",2900,2500,3100),L("85-06-05",3300,2400,3460),
+    L("743232",3300,2600,3460),L(".oo5@ls®IA®I",1800,1100,2000)];
+  const rows=generalRows(lines,view,W,H).map(r=>r.source).sort();
+  assert.deepEqual(rows,[".062",".125 ±.010",".250 ±.005",".500 ±.010",".750 ±.010"]);
+});

@@ -60,8 +60,25 @@ export function propose(text, angular=null){
 // Image OCR (not PDF text) commonly misreads "±" as "+" and "Ø" as "@". A one-sided tolerance
 // always keeps its "/-" part, so a lone "+tolerance" after a value is read as "±". Other
 // misreadings (e.g. "Ø" as the digit 9) are left alone: guessing would invent numbers.
+// Scanned text often reads a "1" as I, l or | and splits numbers with spaces ("I .550", ". I 25",
+// "2.53 I"). A run made only of digits, those look-alikes, dots and single spaces is rejoined when the
+// result is a decimal number; anything else (words such as "DIA" or "BRK") is left alone.
+export function repairScanNumbers(text){
+  return text.replace(/(?<![A-Za-z0-9])[0-9Il|.](?: ?[0-9Il|.])*(?![A-Za-z0-9])/g,run=>{
+    const joined=run.replace(/ /g,"").replace(/[Il|]/g,"1");
+    const lookalikes=(run.match(/[Il|]/g)||[]).length;
+    return /\d/.test(run.replace(/[Il|]/g,""))&&lookalikes<=2&&/^\d*\.\d{2,5}$/.test(joined)?joined:run;
+  });
+}
+// Leader and arrow stubs read at the ends of a callout ("<= .370", ".225 —<——|", "�-- . 225 ___,") are not text.
+export function cleanReading(text){
+  return String(text).replace(/\uFFFD/g," ").trim()
+    .replace(/^[^\w.Ø⌀±+\-−(#]+/,"").replace(/[^\w.°)]+$/,"")
+    .replace(/^[-—–_=<>|]{2,}\s*/,"").replace(/\s*[-—–_=<>|,]{2,}$/,"").trim();
+}
 export function repairOcrText(text){
   const num="(?:\\d+(?:\\.\\d*)?|\\.\\d+)";
+  text=repairScanNumbers(text);
   return text
     .replace(/@\s*(?=[.\d])/g,"Ø")
     // tolerance: a decimal number (".005", "0.1") or whole degrees ("1°"), read completely
