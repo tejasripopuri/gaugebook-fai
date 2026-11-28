@@ -132,6 +132,40 @@ export function repairDiameterNines(lines){
   });
 }
 
+// ---- GD&T feature control frames ----------------------------------------------------------
+// A frame such as  ⌖ | Ø .005 Ⓜ | B Ⓜ | A Ⓜ  is a characteristic too. Scans read it as symbol soup
+// ("e[g_.005 @[B @JA", "6] .005 MAM", ".005®"). From that the tolerance, its Ⓜ/Ⓛ modifier and the
+// datum letters can still be read; the geometric symbol itself cannot, so the inspector confirms it.
+const FRAME_SIGNS=/[⌖⊕⌀Ø@®©Ⓜ\[\]|]|\bMAM\b|(?:^|[^A-Z])M(?:[^A-Z]|$)/;
+const FRAME_VALUE=/(?:^|[^\d.])(0?\.\d{2,4})(?![\d.])/;
+export function datumLetters(lines){
+  const found=new Set();
+  for(const {text} of lines){const m=text.trim().match(/^[-–—]\s*([A-HJ-LN-Z])\s*[-–—]$/);if(m)found.add(m[1]);}
+  return found;
+}
+export function readFrame(text,datums){
+  const t=text.trim();
+  if(/[±]|\+\s*\.?\d|\bREF\b|°/.test(t))return null;            // a dimension, not a frame
+  const v=t.match(FRAME_VALUE);
+  if(!v||!FRAME_SIGNS.test(t))return null;
+  const tol=Number(v[1]);
+  if(!(tol>0&&tol<=.1))return null;
+  const allowed=datums?.size?datums:new Set("ABCDEF");
+  const at=t.indexOf(v[1]),after=t.slice(at+v[1].length);
+  // Ⓜ reads as @, ® or a plain M (never a datum letter: datums skip I, O, Q and are listed on the sheet)
+  const modifier=s=>/^\s*[@®Ⓜ]/.test(s)||(/^\s*M/.test(s)&&!allowed.has("M"))?" Ⓜ":/^\s*Ⓛ/.test(s)?" Ⓛ":"";
+  const diameter=/[Ø⌀g9][\s_]*$/.test(t.slice(0,at))?"Ø":"";
+  const refs=[];
+  for(const m of after.matchAll(/[A-Z]/g)){
+    const letter=m[0],rest=after.slice(m.index+1);
+    if(letter==="M"&&!allowed.has("M"))continue;
+    if(!allowed.has(letter)||refs.some(r=>r[0]===letter))continue;
+    refs.push(letter+modifier(rest));
+  }
+  const value=diameter+(v[1].startsWith("0")?v[1].slice(1):v[1])+modifier(after);
+  return {tol,source:"GD&T "+[value,...refs].join(" | ")};
+}
+
 // ---- text that is not a requirement ---------------------------------------------------------
 const titleBlockWord=/\b(?:DRAWN|DWN|CHK|CHECKED|APPROVED|APPR|ENGR|MFG|QUAL|RELEASED|TITLE|SCALE|SHEET|SIZE|FSCM|CAGE|DRAWING NO|DWG\.? NO|NOMENCLATURE|PART NO|QTY|CONTR NO|PROJ|HEAT TREAT|HARDNESS|SPEC NO|ASSEMBLY NO)\b/i;
 // The title block: the box around the title-block labels in the lower part of the sheet.
@@ -157,7 +191,10 @@ export function startOfText(line,width,height,used,furniture,texts=[]){
   const covers=p=>texts.some(b=>b!==own&&!(b[0]===own[0]&&b[1]===own[1])&&p[0]+R.x>b[0]&&p[0]-R.x<b[2]&&p[1]+R.y>b[1]&&p[1]-R.y<b[3]);
   const free=p=>p[0]>R.x&&p[0]<1-R.x&&p[1]>R.y&&p[1]<1-R.y&&!onFurniture(furniture,p)
     &&used.every(q=>Math.hypot((p[0]-q[0])/(2*R.x),(p[1]-q[1])/(2*R.y))>=1);
-  return spots.find(p=>free(p)&&!covers(p))||spots.find(free)||spots[0];
+  // a balloon must read as belonging to its own text: no other text may be closer to it
+  const dist=(p,b)=>Math.hypot(Math.max(b[0]-p[0],0,p[0]-b[2]),Math.max(b[1]-p[1],0,p[1]-b[3]));
+  const clear=p=>texts.every(b=>(b[0]===own[0]&&b[1]===own[1])||dist(p,b)>dist(p,own)+.002);
+  return spots.find(p=>free(p)&&!covers(p)&&clear(p))||spots.find(p=>free(p)&&!covers(p))||spots.find(free)||spots[0];
 }
 // boxed (optional): bbox => true when the text is drawn inside a box (a basic dimension).
 // furniture (optional): the sheet's frame and title/revision blocks (see sheetFurniture).
@@ -176,6 +213,17 @@ export function generalRows(lines,areas,width,height,boxed,furniture){
     const inStack=o=>o.stacked&&cx>=o.bbox.x0-h&&cx<=o.bbox.x1+h&&cy>=o.bbox.y0&&cy<=o.bbox.y1+h;
     return !lines.some(o=>o!==l&&(sameValue(o)||inStack(o)));
   });
+  // GD&T frames: one per place (a scan's text layer and OCR can each read the same frame)
+  const datums=datumLetters(lines),frames=[];
+  for(const l of lines){
+    const f=readFrame(l.text,datums);if(!f)continue;
+    // pieces of one frame on one row (OCR often splits it at its cell dividers)
+    const h=l.bbox.y1-l.bbox.y0,same=frames.find(o=>Math.abs(o.line.bbox.y0-l.bbox.y0)<h&&o.line.bbox.x0<l.bbox.x1+5*h&&l.bbox.x0<o.line.bbox.x1+5*h);
+    if(!same)frames.push({line:l,...f});
+    else if(f.source.split("|").length>same.source.split("|").length)Object.assign(same,{line:l,...f});
+  }
+  const frameLines=new Set(frames.map(f=>f.line));
+  lines=lines.filter(l=>!readFrame(l.text,datums)||frameLines.has(l));
   const tb=titleBlock(lines,height);
   // On a drawing whose dimensions are decimals, a bare whole number (a border zone, a 250 surface
   // finish mark, a note or revision flag, the drawing number) is not a dimension.
@@ -207,7 +255,16 @@ export function generalRows(lines,areas,width,height,boxed,furniture){
   const texts=lines.filter(l=>/\d|[A-Z]{2}/i.test(l.text)&&l.bbox.x1-l.bbox.x0<width*.2&&l.bbox.y1-l.bbox.y0<height*.06)
     .map(l=>[l.bbox.x0/width,l.bbox.y0/height,l.bbox.x1/width,l.bbox.y1/height]);
   const sideHeadings=lines.filter(l=>/^(?:feature requirements|feature center locations|inspection notes|general notes|hole (?:table|chart)|coordinates|bill of materials|revision history)\s*:?$/i.test(l.text.trim()));
+  const frameOf=new Map(frames.map(f=>[f.line,f]));
   for(const line of lines){
+    const frame=frameOf.get(line);
+    if(frame){   // numbered in reading order with the dimensions around it
+      const point=center(line,width,height),box=[line.bbox.x0/width,line.bbox.y0/height,line.bbox.x1/width,line.bbox.y1/height];
+      if(onFurniture(furniture,point,box)||!anchorFor(areas,...point))continue;
+      const xy=startOfText(line,width,height,used,furniture,texts);used.push(xy);
+      rows.push({source:frame.source,name:frame.source,bounds:[0,frame.tol],count:1,gdt:true,sourceBox:box,xy,off:false,fromPdfText:!!line.fromPdfText});
+      continue;
+    }
     const text=line.text.trim(),point=center(line,width,height);
     if(!text||notRequirement(line)||metadata.test(text)||label(text)||definesGeneralTolerance(text)||/\b(?:ANG(?:ULAR)?|ANGLES?)\s*(?:TOL(?:ERANCES?)?\.?)?\s*[:=]?\s*(?:±|\+\s*\/\s*[-−]|\+(?=\s*\.?\d))/i.test(text))continue;
     const tag=text.match(/^([A-Z]\d?)\s+(?=\d|Ø|⌀|CBORE|SLOT|DIA|POCKET|R\d)/i);

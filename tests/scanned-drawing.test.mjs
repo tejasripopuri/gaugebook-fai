@@ -110,3 +110,16 @@ test("a balloon sits just before the start of its dimension, not on it", () => {
   const stack={text:".5485 +.0000/-.0005 DIA",bbox:{x0:1000,y0:500,x1:1100,y1:620},lineH:30,stacked:true};
   assert.ok(Math.abs(startOfText(stack,W,H,[])[1]-515/H)<.002);
 });
+
+// ---- GD&T feature control frames read from a scan (743232) ---------------------------------
+import {readFrame,datumLetters} from "../public/general-plan.mjs";
+test("a scanned GD&T frame gives its tolerance, Ⓜ modifiers and datums", () => {
+  const datums=datumLetters([{text:"-A-"},{text:"-B-"},{text:"A"}]);
+  assert.deepEqual([...datums].sort(),["A","B"]);
+  const read=t=>readFrame(t,datums)?.source;
+  assert.equal(read("e[g_.005 @[B @JA"),"GD&T Ø.005 Ⓜ | B Ⓜ | A");
+  assert.equal(read("6] .005 MAM"),"GD&T .005 Ⓜ | A Ⓜ");
+  assert.equal(read(".005@IA®I"),"GD&T .005 Ⓜ | A Ⓜ");
+  assert.equal(readFrame("6] .005 MAM",datums).tol,.005);
+  for(const t of [".500 ±.010",".005","1.738","250",".030 R"])assert.equal(readFrame(t,datums),null,t);
+});
