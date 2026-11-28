@@ -2,7 +2,9 @@ export function inside(areas,[x,y]){
   return areas.some(([left,top,right,bottom])=>x>=left&&x<=right&&y>=top&&y<=bottom);
 }
 // Find connected drawing strokes after suppressing OCR text and long sheet rules.
-export function detectViews(canvas,lines){
+// furniture (optional, see sheetFurniture): the border and title/revision blocks are blanked first,
+// so the frame's lines and zone ticks cannot join up with, or pose as, a drawing view.
+export function detectViews(canvas,lines,furniture){
   const size=720,scale=size/Math.max(canvas.width,canvas.height);
   const w=Math.ceil(scale*canvas.width),h=Math.ceil(scale*canvas.height);
   // Pool dark source pixels so thin projected views survive downsampling.
@@ -12,7 +14,18 @@ export function detectViews(canvas,lines){
     const row=Math.floor(y*scale)*w;
     for(let x=0,i=y*canvas.width*4;x<canvas.width;x++,i+=4)if(rgba[i]<190)ink[row+cols[x]]=1;
   }
+  if(furniture){
+    const [l,t,r,b]=furniture.frame,inset=.004;
+    const blank=(L,T,R,B)=>{for(let y=Math.max(0,Math.floor(T*h));y<Math.min(h,Math.ceil(B*h));y++)ink.fill(0,y*w+Math.max(0,Math.floor(L*w)),y*w+Math.min(w,Math.ceil(R*w)));};
+    blank(0,0,1,t+inset);blank(0,b-inset,1,1);blank(0,0,l+inset,1);blank(r-inset,0,1,1);
+    for(const [L,T,R,B] of furniture.blocks)blank(L-inset,T-inset,R+inset,B+inset);
+  }
+  // OCR also "reads" circles and hatching as words ("NY", "Ne", "") in boxes far taller than the
+  // sheet's real text. Only text-sized boxes are erased, so those strokes stay part of their view.
+  const heights=lines.filter(l=>/\d/.test(l.text)).map(l=>l.bbox.y1-l.bbox.y0).sort((a,b)=>a-b);
+  const textHeight=heights.length?heights[Math.floor(heights.length/2)]:Infinity;
   for(const {text,bbox:b} of lines){
+    if(b.y1-b.y0>2.5*textHeight&&!/\d/.test(text))continue;
     // OCR sometimes labels an entire side view as one wide glyph. Keep its strokes.
     const major=Math.max(b.x1-b.x0,b.y1-b.y0),minor=Math.max(1,Math.min(b.x1-b.x0,b.y1-b.y0));
     if(major/minor>Math.max(3,text.trim().length*1.6))continue;
