@@ -66,7 +66,7 @@ function redraw(){
   el("reviewState").textContent=plan.approved[page]?"Sheet reviewed.":"Check each proposal against the image, including units, drawing notes, GD&T and general tolerances. Add missed callouts and remove false matches.";
   if(plan.imageMatches?.[page]&&!plan.approved[page])el("reviewState").textContent="Proposed values come from the "+plan.imageMatches[page]+" reference layout. Verify each against the uploaded drawing before confirming.";
   el("approve").disabled=!areas().length||scanning||plan.approved[page]||rows.some(r=>!r.confirmed);
-  el("scan").disabled=scanning||plan.scanned[page];el("sheet").disabled=scanning;
+  el("scan").disabled=scanning||plan.scanned[page]&&!outdated(page);el("sheet").disabled=scanning;
   el("undo").hidden=!plan.deleted.length;
   el("resetPins").hidden=!onPage().some(r=>r.moved&&r.home);
   const fromPdf=onPage().filter(pdfConfirmable);
@@ -248,7 +248,19 @@ function progress(fraction,label){
   message(sheet+label+"… "+Math.round(fraction*100)+"%");
 }
 async function scan(){
-  if(scanning||plan.scanned[page])return;scanning=true;redraw();progress(0,"Checking for a known drawing layout");
+  if(scanning||plan.scanned[page]&&!outdated(page))return;
+  let kept=[];
+  if(plan.scanned[page]){
+    // Reading again a sheet that an older version read: drop its unreviewed balloons and keep the
+    // ones the inspector confirmed, placed by hand or entered results for.
+    const answers=state().answers||{};
+    const reviewed=r=>r.sheet!==page||r.confirmed||r.manual||r.repeats.some((_,i)=>answers[r.id+"-"+i]);
+    plan.rows=plan.rows.filter(reviewed);plan.offView=plan.offView.filter(reviewed);
+    plan.deleted=plan.deleted.filter(({row})=>row.sheet!==page);
+    kept=[...plan.rows,...plan.offView].filter(r=>r.sheet===page);
+    plan.scanned[page]=false;plan.approved[page]=false;
+  }
+  scanning=true;redraw();progress(0,"Checking for a known drawing layout");
   try{
     const existing=[...plan.rows,...plan.offView].filter(r=>r.sheet===page);
     function insert(proposal,x,y,off=false){
@@ -259,6 +271,7 @@ async function scan(){
         }
         return;
       }
+      if(kept.some(r=>r.xy&&Math.hypot(r.xy[0]-x,r.xy[1]-y)<.02))return; // the inspector already reviewed this spot
       if(plan.deleted.some(({row:r})=>r.sheet===page&&r.source===proposal.source&&Math.hypot(r.xy[0]-x,r.xy[1]-y)<.025))return;
       const row=add(proposal,x,y);row.home=[x,y];
       row.name=proposal.name||row.name;row.unit=proposal.unit||"";
@@ -296,6 +309,7 @@ async function scan(){
 // Version of the drawing-reading rules. A sheet read by an older version is read again when it is
 // opened, as long as nobody has confirmed a balloon or entered a result on it yet.
 const READER_VERSION=4;
+const outdated=n=>plan.scanned[n]&&!plan.imageMatches?.[n]&&(plan.generalVersion?.[n]??0)<READER_VERSION;
 function untouched(n){
   const answers=state().answers||{};
   const rows=[...plan.rows,...plan.offView].filter(r=>r.sheet===n);
@@ -327,12 +341,12 @@ async function show(n,selection){
     }
     plan.generalVersion[n]=3;save();
   }
-  if(plan.scanned[n]&&!plan.imageMatches?.[n]&&(plan.generalVersion?.[n]??0)<READER_VERSION){
+  if(outdated(n)){
     if(untouched(n)){
       plan.rows=plan.rows.filter(r=>r.sheet!==n);plan.offView=plan.offView.filter(r=>r.sheet!==n);
       plan.deleted=plan.deleted.filter(({row})=>row.sheet!==n);
       plan.scanned[n]=false;save();   // the caller reads the sheet again
-    }else message("This sheet was read by an earlier version of the app; your confirmed balloons and results are kept as they are. Press Read sheet image to read it again with the current version.");
+    }else message("This sheet was read by an earlier version of the app. Press Read sheet image to read it again: balloons you confirmed or entered results for are kept, the rest are replaced.");
   }
   placing=null;el("sheet").value=n;selected=selection??onPage()[0]?.id;redraw();
 }
