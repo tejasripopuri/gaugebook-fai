@@ -354,7 +354,7 @@ async function show(n,selection){
       plan.rows=plan.rows.filter(r=>r.sheet!==n);plan.offView=plan.offView.filter(r=>r.sheet!==n);
       plan.deleted=plan.deleted.filter(({row})=>row.sheet!==n);
       plan.scanned[n]=false;save();   // the caller reads the sheet again
-    }else message("This sheet was read by an earlier version of the app. Press Read sheet image to read it again: balloons with results are kept, confirmed ones are kept unless they sit in the border or title block, and the rest are replaced.");
+    }else message("The balloons on this sheet are from an older reading. Press Read sheet image to update them: balloons with results are kept, and confirmed ones are kept unless they sit in the border or title block.");
   }
   placing=null;el("sheet").value=n;selected=selection??onPage()[0]?.id;redraw();
 }
