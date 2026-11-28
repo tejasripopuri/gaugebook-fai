@@ -22,7 +22,29 @@ function dimension(text){
 const NOMINAL=/^(?:\d+\s*[xX×]\s*)?(?:[Ø⌀]\s*)?(?:\d*\.\d+|\d+\.\d+|\d+°)(?:\s*(?:R|DIA|°))?$/;
 const TOLERANCE=/^([±+\-−#])\s*(\d*\.\d+|\d+(?:\.\d+)?)\s*(°)?[^\w.±+\-−]*$/;
 const QUALIFIER=/^(?:DIA(?:\s+THRU)?|THRU|REF|BOTH\s+SIDES|COR\.?\s*BRK|R|\d+\s*[xX×]|DP|DEEP|TYP|BSC|BASIC)[^\w]*$/i;
+// OCR on scans often misreads the degree sign (o, º, *, %, or a 0: "450") and the ± in front of an
+// angle's tolerance (t, f, #, *, or nothing: "5°"). An angle with a small angle printed under it is
+// one callout: "45°" over "±5°" -> "45° ±5°".
+const DEG="[°ºo*%]";
+const ANGLE_NOMINAL=new RegExp("^(\\d{1,3})\\s*"+DEG+"$"),ANGLE_ZERO=/^(\d{1,2})0$/;
+const ANGLE_TOL=new RegExp("^[±+#tf*£:]?\\s*(\\d{1,2}(?:\\.\\d+)?)\\s*"+DEG+"$");
+function fixAngleStacks(lines){
+  const out=lines.map(l=>({...l}));
+  for(const top of out){
+    const t=top.text.trim(),nominal=t.match(ANGLE_NOMINAL)||t.match(ANGLE_ZERO);
+    if(!nominal)continue;
+    const h=top.bbox.y1-top.bbox.y0,mid=b=>(b.x0+b.x1)/2;
+    const under=out.find(m=>m!==top&&m.bbox.y0>=top.bbox.y1-.5*h&&m.bbox.y0<=top.bbox.y1+.7*h
+      &&(Math.abs(m.bbox.x0-top.bbox.x0)<=1.3*h||Math.abs(mid(m.bbox)-mid(top.bbox))<=1.3*h)&&ANGLE_TOL.test(m.text.trim()));
+    if(!under)continue;
+    const tol=+under.text.trim().match(ANGLE_TOL)[1];
+    if(!(tol>0&&tol<=15&&tol<+nominal[1]))continue;
+    top.text=nominal[1]+"°";under.text="±"+tol+"°";
+  }
+  return out;
+}
 export function joinStacks(lines){
+  lines=fixAngleStacks(lines);
   const order=[...lines].sort((a,b)=>a.bbox.y0-b.bbox.y0||a.bbox.x0-b.bbox.x0);
   const taken=new Set(),out=[];
   for(const line of order){
