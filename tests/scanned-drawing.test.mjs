@@ -31,18 +31,20 @@ test("a tolerance printed under its dimension stays with it",()=>{
   assert.deepEqual(propose("45° ±5°")[0].bounds,[40,50]);
   assert.deepEqual(propose(".218 ±.010 DIA THRU")[0].bounds,[.208,.228]); // a lone "+" under it was a misread ±
 });
-test("border zones, surface finish marks, the title block and stray tolerances are not ballooned",()=>{
+test("border zones, the title block and stray tolerances are not ballooned; surface roughness marks are",()=>{
   const W=4000,H=3000,view=[[.1,.1,.9,.7]];
   const lines=[
     // dimensions on the view (inch style: leading decimal point)
     L(".500",1000,800,1080),L("±.010",1000,829,1090),L(".250",1500,800,1580),L("±.005",1500,829,1590),
     L(".125",2000,800,2080),L("±.010",2000,829,2090),L(".750",2500,800,2580),L("±.010",2500,829,2590),L(".062",3000,800,3080),
     // not requirements
-    L("7",600,20,620),L("G",10,900,30),L("250",1200,1200,1260),L("16",1300,1300,1330),L("-.004",1700,1600,1790),
+    L("7",600,20,620),L("G",10,900,30),L("-.004",1700,1600,1790),
+    // surface roughness marks: characteristics with a maximum Ra
+    L("250",1200,1200,1260),L("16",1300,1300,1330),
     L("DRAWN J. WILKE",2900,2400,3200),L("CHK E. LARSON",2900,2450,3200),L("SCALE 4/1",2900,2500,3100),L("85-06-05",3300,2400,3460),
     L("743232",3300,2600,3460),L(".oo5@ls®IA®I",1800,1100,2000)];
   const rows=generalRows(lines,view,W,H).map(r=>r.source).sort();
-  assert.deepEqual(rows,[".062",".125 ±.010",".250 ±.005",".500 ±.010",".750 ±.010"]);
+  assert.deepEqual(rows,[".062",".125 ±.010",".250 ±.005",".500 ±.010",".750 ±.010","Surface roughness Ra 16 µin max","Surface roughness Ra 250 µin max"]);
 });
 
 // ---- border and title block, found from the sheet's ruled lines ----------------------------
@@ -122,4 +124,11 @@ test("a scanned GD&T frame gives its tolerance, Ⓜ modifiers and datums", () =>
   assert.equal(read(".005@IA®I"),"GD&T .005 Ⓜ | A Ⓜ");
   assert.equal(readFrame("6] .005 MAM",datums).tol,.005);
   for(const t of [".500 ±.010",".005","1.738","250",".030 R"])assert.equal(readFrame(t,datums),null,t);
+});
+
+import {readRoughness} from "../public/general-plan.mjs";
+test("surface roughness grades are read; other numbers are not", () => {
+  assert.deepEqual(readRoughness("250/_",{decimalDrawing:true}),{value:250,unit:"µin"});
+  assert.deepEqual(readRoughness("1.6√",{decimalDrawing:false}),{value:1.6,unit:"µm"});
+  for(const [t,inch] of [["4",true],[".250",true],["3.2",false],["250",false],["125 ±5",true]])assert.equal(readRoughness(t,{decimalDrawing:inch}),null,t);
 });

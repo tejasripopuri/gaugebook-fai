@@ -166,11 +166,26 @@ export function readFrame(text,datums){
   return {tol,source:"GD&T "+[value,...refs].join(" | ")};
 }
 
+// ---- surface roughness marks ---------------------------------------------------------------
+// A roughness symbol (a check mark with the maximum Ra on it: 250√, 63√, 1.6√) is a characteristic:
+// the measured Ra must not exceed the value. Only the standard roughness grades count, and a bare
+// number needs the drawing to be a decimal-inch one (where whole numbers are never dimensions).
+const ROUGH_IN=new Set([1,2,4,8,16,32,63,125,250,500,1000]),ROUGH_MM=new Set([.025,.05,.1,.2,.4,.8,1.6,3.2,6.3,12.5,25,50]);
+export function readRoughness(text,{decimalDrawing}={}){
+  const m=text.trim().match(/^(Ra\s*)?(\d{1,4}(?:\.\d{1,3})?)\s*([√✓∨Vv]|\/\s*_?|_\/)?\s*$/);
+  if(!m)return null;
+  const value=Number(m[2]),glyph=!!(m[1]||m[3]),inch=decimalDrawing;
+  if(inch&&ROUGH_IN.has(value)&&(glyph||value>=16))return {value,unit:"µin"};
+  if(!inch&&glyph&&ROUGH_MM.has(value))return {value,unit:"µm"};
+  return null;
+}
+
 // ---- text that is not a requirement ---------------------------------------------------------
 const titleBlockWord=/\b(?:DRAWN|DWN|CHK|CHECKED|APPROVED|APPR|ENGR|MFG|QUAL|RELEASED|TITLE|SCALE|SHEET|SIZE|FSCM|CAGE|DRAWING NO|DWG\.? NO|NOMENCLATURE|PART NO|QTY|CONTR NO|PROJ|HEAT TREAT|HARDNESS|SPEC NO|ASSEMBLY NO)\b/i;
 // The title block: the box around the title-block labels in the lower part of the sheet.
 function titleBlock(lines,height){
-  const marks=lines.filter(l=>l.bbox.y0>height*.55&&titleBlockWord.test(l.text));
+  // "VIEW C  SCALE 10/1" labels a view; it is not a title-block field
+  const marks=lines.filter(l=>l.bbox.y0>height*.55&&titleBlockWord.test(l.text)&&!/\b(?:VIEW|SECTION|DETAIL)\b/i.test(l.text));
   if(marks.length<3)return null;
   return {x0:Math.min(...marks.map(l=>l.bbox.x0)),y0:Math.min(...marks.map(l=>l.bbox.y0))-height*.01};
 }
@@ -224,7 +239,8 @@ export function generalRows(lines,areas,width,height,boxed,furniture){
   }
   const frameLines=new Set(frames.map(f=>f.line));
   lines=lines.filter(l=>!readFrame(l.text,datums)||frameLines.has(l));
-  const tb=titleBlock(lines,height);
+  // The title block found from the sheet's ruled lines is exact; the word-based guess is the fallback.
+  const tb=furniture?.blocks?.length?null:titleBlock(lines,height);
   // On a drawing whose dimensions are decimals, a bare whole number (a border zone, a 250 surface
   // finish mark, a note or revision flag, the drawing number) is not a dimension.
   // Inch drawings write values with a leading point (".500"); five or more of those mark one.
@@ -256,13 +272,20 @@ export function generalRows(lines,areas,width,height,boxed,furniture){
     .map(l=>[l.bbox.x0/width,l.bbox.y0/height,l.bbox.x1/width,l.bbox.y1/height]);
   const sideHeadings=lines.filter(l=>/^(?:feature requirements|feature center locations|inspection notes|general notes|hole (?:table|chart)|coordinates|bill of materials|revision history)\s*:?$/i.test(l.text.trim()));
   const frameOf=new Map(frames.map(f=>[f.line,f]));
+  for(const l of lines){
+    if(frameOf.has(l))continue;
+    const r=readRoughness(l.text,{decimalDrawing});
+    // one mark read twice (the scan's text layer and OCR) is one characteristic
+    const h=l.bbox.y1-l.bbox.y0,twin=[...frameOf].some(([o,f])=>f.roughness&&Math.abs(o.bbox.y0-l.bbox.y0)<1.5*h&&o.bbox.x0<l.bbox.x1+h&&l.bbox.x0<o.bbox.x1+h);
+    if(r&&!twin)frameOf.set(l,{source:"Surface roughness Ra "+r.value+" "+r.unit+" max",tol:r.value,unit:r.unit,roughness:true});
+  }
   for(const line of lines){
     const frame=frameOf.get(line);
     if(frame){   // numbered in reading order with the dimensions around it
       const point=center(line,width,height),box=[line.bbox.x0/width,line.bbox.y0/height,line.bbox.x1/width,line.bbox.y1/height];
       if(onFurniture(furniture,point,box)||!anchorFor(areas,...point))continue;
       const xy=startOfText(line,width,height,used,furniture,texts);used.push(xy);
-      rows.push({source:frame.source,name:frame.source,bounds:[0,frame.tol],count:1,gdt:true,sourceBox:box,xy,off:false,fromPdfText:!!line.fromPdfText});
+      rows.push({source:frame.source,name:frame.source,bounds:[0,frame.tol],count:1,unit:frame.unit,gdt:!frame.roughness,roughness:frame.roughness,sourceBox:box,xy,off:false,fromPdfText:!!line.fromPdfText});
       continue;
     }
     const text=line.text.trim(),point=center(line,width,height);

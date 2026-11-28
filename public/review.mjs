@@ -319,7 +319,7 @@ async function scan(){
 }
 // Version of the drawing-reading rules. A sheet read by an older version is read again when it is
 // opened, as long as nobody has confirmed a balloon or entered a result on it yet.
-const READER_VERSION=9;
+const READER_VERSION=10;
 // A balloon placed by a click on the drawing and never filled in (often a stray click) is not work to keep.
 const empty=r=>r.manual&&!r.source?.trim()&&!r.confirmed&&!r.repeats.some((_,i)=>(state().answers||{})[r.id+"-"+i]);
 const outdated=n=>plan.scanned[n]&&!plan.imageMatches?.[n]&&(plan.generalVersion?.[n]??0)<READER_VERSION;
