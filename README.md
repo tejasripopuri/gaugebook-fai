@@ -47,6 +47,16 @@ The source tree contains the running app, test suite, CI workflow and example fo
 
 **Only callouts on the drawing views get balloons.** Text beside the drawing is never proposed: general notes, requirement lists (including letter-tagged entries such as `B  Ø1.250 THRU`), tables and the title block. To inspect such a requirement, click its feature on the drawing and enter it.
 
+**Scanned and older drawings.**
+- *Stacked tolerances:* a tolerance printed on the lines under its dimension is read with it (`.5485` / `+.0000` / `-.0005` / `DIA` becomes `.5485 +.0000/-.0005 DIA`).
+- *Not ballooned:*
+  - text in the border band (zone labels)
+  - text inside the title block, which is located from its labels (DRAWN, CHK, SCALE, FSCM…)
+  - dates, unreadable frame fragments, and surface-finish marks
+  - on inch drawings, bare whole numbers such as a `250` finish mark or a revision flag
+- *Scanned PDFs:* a PDF that is a scan, meaning one picture covering most of the page, is recognised. Its text layer is treated as OCR and repaired (`I .550` becomes `1.550`), and where our OCR reads a number more completely at the same spot, that reading is used.
+- *Resolution:* large sheets render at about 120 pixels per inch, up to 6,000 px, so small text stays readable; letter/A-size sheets are unchanged.
+
 **General (title-block) tolerances.** When a drawing states general tolerances, such as `.XX ±.01  .XXX ±.005`, a plain dimension printed without its own tolerance takes the one for its number of decimal places. It is shown as, for example, `2.000 ±.005`, with a note that the tolerance came from the title block. This also covers the forms image OCR produces, such as `-XX +.01`. These keep just the dimension, recorded for information:
 - basic dimensions: marked `BSC`/`BASIC`, drawn in a box, or listed in a note that calls them basic
 - reference dimensions: in brackets, e.g. `(2.000)`, or marked `REF`
