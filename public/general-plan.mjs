@@ -81,6 +81,57 @@ export function joinStacks(lines){
   return out;
 }
 
+// ---- general tolerance tables read by OCR ---------------------------------------------------
+// A title-block table such as
+//   GENERAL TOLERANCES / UNLESS OTHERWISE SPECIFIED
+//   .XX   ±.01 IN
+//   .XXX  ±.005 IN
+// often comes out of OCR in pieces ("XX", "-01 IN"; "+ XXX", "-005 IN"): the point and ± are lost
+// or read as - or +. The pieces on one row of the table are put back together and read here.
+const TABLE_HEADING=/GENERAL\s+TOL|UNLESS\s+OTHERWISE\s+(?:SPECIFIED|STATED|NOTED)|TOLERANCES?\s*(?:UNLESS|:)/i;
+const TABLE_ROW=/(?:^|\s)[.+\-·,:]?\s*(X{2,4})\b(?:.*?)([±+\-—–.,:])\s*(\d{1,4})\s*(?:IN|MM|")?\.?\s*$/i;
+export function generalToleranceTable(lines,width,height){
+  const rules=new Map();
+  for(const head of lines.filter(l=>TABLE_HEADING.test(l.text))){
+    const x0=head.bbox.x0-width*.02,x1=head.bbox.x0+width*.3,y0=head.bbox.y0,y1=head.bbox.y0+height*.2;
+    const inTable=lines.filter(l=>l!==head&&l.bbox.x0>=x0&&l.bbox.x0<=x1&&l.bbox.y0>=y0&&l.bbox.y0<=y1)
+      .sort((a,b)=>a.bbox.y0-b.bbox.y0||a.bbox.x0-b.bbox.x0);
+    const rows=[];
+    for(const l of inTable){
+      const cy=(l.bbox.y0+l.bbox.y1)/2,h=Math.max(4,l.bbox.y1-l.bbox.y0);
+      const row=rows.find(r=>Math.abs(r.cy-cy)<=Math.max(h,r.h)*.6);
+      if(row)row.parts.push(l);else rows.push({cy,h,parts:[l]});
+    }
+    for(const row of rows){
+      const text=row.parts.sort((a,b)=>a.bbox.x0-b.bbox.x0).map(p=>p.text.trim()).filter(Boolean).join(" ");
+      const m=text.match(TABLE_ROW);
+      if(!m)continue;
+      const decimals=m[1].length,tolText="."+m[3],tol=Number(tolText);
+      // a tolerance always has fewer or as many decimals as the values it applies to ".XXX ±.005"
+      if(!(tol>0&&tol<1)||m[3].length>decimals+1)continue;
+      if(!rules.has(decimals))rules.set(decimals,{tol,tolText,label:"."+"X".repeat(decimals)+" ±"+tolText});
+    }
+  }
+  return rules;
+}
+
+// ---- Ø read as 9 --------------------------------------------------------------------------
+// OCR reads a slashed Ø as the digit 9: "Ø1.500" -> "91.500". On a sheet whose other sizes are
+// all small, a value that only becomes huge because of a leading 9 is a diameter.
+export function repairDiameterNines(lines){
+  const value=t=>{const m=t.match(/^\s*(?:\d+\s*[xX×]\s*)?(\d*\.\d+)/);return m?Number(m[1]):null;};
+  const others=lines.map(l=>l.text.trim()).filter(t=>!/^(?:\d+\s*[xX×]\s*)?9\d*\.\d/.test(t)).map(value).filter(v=>v>0);
+  if(others.length<2)return lines;
+  const largest=Math.max(...others);
+  return lines.map(l=>{
+    const m=l.text.trim().match(/^((?:\d+\s*[xX×]\s*)?)9(\d*\.\d+)(.*)$/);
+    if(!m)return l;
+    const full=Number("9"+m[2]),rest=Number(m[2]);
+    if(!(full>largest*5&&rest<=largest*5))return l;
+    return {...l,text:m[1]+"Ø"+m[2]+m[3]};
+  });
+}
+
 // ---- text that is not a requirement ---------------------------------------------------------
 const titleBlockWord=/\b(?:DRAWN|DWN|CHK|CHECKED|APPROVED|APPR|ENGR|MFG|QUAL|RELEASED|TITLE|SCALE|SHEET|SIZE|FSCM|CAGE|DRAWING NO|DWG\.? NO|NOMENCLATURE|PART NO|QTY|CONTR NO|PROJ|HEAT TREAT|HARDNESS|SPEC NO|ASSEMBLY NO)\b/i;
 // The title block: the box around the title-block labels in the lower part of the sheet.
@@ -106,7 +157,7 @@ function place(point,areas,used){
 // furniture (optional): the sheet's frame and title/revision blocks (see sheetFurniture).
 export function generalRows(lines,areas,width,height,boxed,furniture){
   const rows=[],used=[];
-  lines=joinStacks(lines);
+  lines=repairDiameterNines(joinStacks(lines));
   // A bare value next to the same value WITH its tolerance is a second reading of one callout.
   const valueOf=t=>(t.match(/\d*\.\d+|\d+(?:\.\d+)?/)||[])[0];
   lines=lines.filter(l=>{
@@ -138,6 +189,7 @@ export function generalRows(lines,areas,width,height,boxed,furniture){
   };
   const angular=drawingAngleDefault(lines);
   const general=drawingLinearDefaults(lines);
+  for(const [decimals,rule] of generalToleranceTable(lines,width,height))if(!general.has(decimals))general.set(decimals,rule);
   const basicValues=basicValuesFromNotes(lines);
   // Basic and reference dimensions keep just the dimension; plain ones take the title-block tolerance.
   const classify=(p,line)=>{

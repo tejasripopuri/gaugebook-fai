@@ -78,3 +78,20 @@ test("an angle and the tolerance under it stay one callout even when OCR misread
   assert.deepEqual(joinStacks([L(".250",100,100),L("5°",100,116)]).map(l=>l.text),[".250","5°"]);   // not an angle
   assert.deepEqual(propose("45° ±5°")[0].bounds,[40,50]);
 });
+
+// ---- a scanned title block's general tolerance table, and Ø read as 9 (TR-101) -------------
+import {generalToleranceTable,repairDiameterNines} from "../public/general-plan.mjs";
+const at=(t,x,y,w=60)=>({text:t,bbox:{x0:x,y0:y,x1:x+w,y1:y+18}});
+
+test("a general tolerance table OCR broke into pieces is still read", () => {
+  const lines=[at("GENERAL TOLERANCES",110,1520,270),at("UNLESS OTHERWISE SPECIFIED",110,1580,320),
+    at("XX",112,1646,40),at("",208,1648,12),at("-01 IN",226,1646,80),
+    at("+ XXX",112,1704,52),at("ae",208,1718,12),at("-005 IN",226,1704,92),at("ANGLES",110,1760,82),at("exh",208,1760,40)];
+  assert.deepEqual([...generalToleranceTable(lines,2600,2010)].map(([d,r])=>[d,r.tolText]),[[2,".01"],[3,".005"]]);
+});
+
+test("Ø read as 9 is repaired only when the 9 makes the value implausibly large", () => {
+  const texts=l=>repairDiameterNines(l.map((t,i)=>at(t,0,i*30))).map(l=>l.text);
+  assert.deepEqual(texts(["1.800 ±.005","0.300","90.600 ±.002","91.500","91.000"]),["1.800 ±.005","0.300","Ø0.600 ±.002","Ø1.500","Ø1.000"]);
+  assert.deepEqual(texts(["95.0","120.5","90.6"]),["95.0","120.5","90.6"]);      // a metric part with large sizes
+});
