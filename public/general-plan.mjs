@@ -1,5 +1,5 @@
 import {propose,drawingAngleDefault,drawingLinearDefaults,definesGeneralTolerance,withGeneralTolerance,dimensionKind,basicValuesFromNotes} from "./callouts.mjs";
-import {anchorFor,inside} from "./drawing-areas.mjs";
+import {anchorFor,inside,onFurniture} from "./drawing-areas.mjs";
 
 const number=/(?:\d+[.,]?\d*|[.,]\d+)/;
 const feature=/\b(?:CBORE|CSK|DEPTH|DIA|RADIUS|SLOT|THRU|TYP|MAX|MIN|FLATNESS|POSITION|PROFILE|PARALLELISM|PERPENDICULARITY|POCKET|CHAMFER)\b|[Ø⌀±°⌖⌴⏥⊥∥]|\bR\s*\d/i;
@@ -81,7 +81,8 @@ function place(point,areas,used){
   return point;
 }
 // boxed (optional): bbox => true when the text is drawn inside a box (a basic dimension).
-export function generalRows(lines,areas,width,height,boxed){
+// furniture (optional): the sheet's frame and title/revision blocks (see sheetFurniture).
+export function generalRows(lines,areas,width,height,boxed,furniture){
   const rows=[],used=[];
   lines=joinStacks(lines);
   // A bare value next to the same value WITH its tolerance is a second reading of one callout.
@@ -104,6 +105,7 @@ export function generalRows(lines,areas,width,height,boxed){
   const notRequirement=line=>{
     const t=line.text.trim(),{x0,y0,x1,y1}=line.bbox,cx=(x0+x1)/2,cy=(y0+y1)/2;
     if(cx<width*.03||cx>width*.97||cy<height*.03||cy>height*.97)return true;           // border zone labels
+    if(onFurniture(furniture,[cx/width,cy/height],[x0/width,y0/height,x1/width,y1/height]))return true;                          // outside the frame, or in a title or revision block
     if(tb&&x0>=tb.x0-width*.01&&y0>=tb.y0)return true;                                   // title block
     if(/\b\d{2}[-/]\d{2}[-/]\d{2,4}\b/.test(t))return true;                              // dates
     if(TOLERANCE.test(t))return true;                                                     // a tolerance left without its dimension

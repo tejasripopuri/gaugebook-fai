@@ -1,7 +1,7 @@
 import {propose,drawingAngleDefault} from "./callouts.mjs";
 import {matchPracticeImage} from "./practice-match.mjs";
 import {practiceLayout} from "./practice-views.mjs";
-import {detectViews,inside} from "./drawing-areas.mjs";
+import {detectViews,inside,sheetFurniture,clipViews,onFurniture} from "./drawing-areas.mjs";
 import {drawingFile} from "./uploads.mjs";
 import {openSheets,dimensionLines,verifiedImageLines,boxDetector} from "./image-reader.mjs";
 import {generalRows} from "./general-plan.mjs";
@@ -295,10 +295,16 @@ async function scan(){
       try{ocr=await dimensionLines(canvas,(f,label)=>progress(.1+.8*f,label));}catch(error){if(!embedded.length)throw error;ocr=[];}
       const lines=verifiedImageLines(ocr,embedded);
       progress(.92,"Finding drawing views");await new Promise(requestAnimationFrame);
-      plan.areas[page]=detectViews(canvas,lines);
+      const furniture=sheetFurniture(canvas);
+      plan.areas[page]=clipViews(detectViews(canvas,lines),furniture);
       partition();
       progress(.97,"Numbering balloons");await new Promise(requestAnimationFrame);
-      for(const row of generalRows(lines,areas(),canvas.width,canvas.height,boxDetector(canvas)))insert(row,...row.xy,row.off);
+      // Balloons kept from an earlier reading that sit in the border or title block, with no results, go.
+      const answers=state().answers||{};
+      const from=r=>r.sourceBox?[(r.sourceBox[0]+r.sourceBox[2])/2,(r.sourceBox[1]+r.sourceBox[3])/2]:r.xy;
+      const stray=r=>r.sheet===page&&!r.manual&&from(r)&&onFurniture(furniture,from(r),r.sourceBox)&&!r.repeats.some((_,i)=>answers[r.id+"-"+i]);
+      plan.rows=plan.rows.filter(r=>!stray(r));plan.offView=plan.offView.filter(r=>!stray(r));kept=kept.filter(r=>!stray(r));
+      for(const row of generalRows(lines,areas(),canvas.width,canvas.height,boxDetector(canvas),furniture))insert(row,...row.xy,row.off);
       (plan.generalVersion??={})[page]=READER_VERSION;
     }
     sortRows();(plan.dimensionOnly??={})[page]=true;plan.scanned[page]=true;selected=onPage()[0]?.id;changed();
@@ -308,7 +314,7 @@ async function scan(){
 }
 // Version of the drawing-reading rules. A sheet read by an older version is read again when it is
 // opened, as long as nobody has confirmed a balloon or entered a result on it yet.
-const READER_VERSION=4;
+const READER_VERSION=5;
 const outdated=n=>plan.scanned[n]&&!plan.imageMatches?.[n]&&(plan.generalVersion?.[n]??0)<READER_VERSION;
 function untouched(n){
   const answers=state().answers||{};
@@ -346,7 +352,7 @@ async function show(n,selection){
       plan.rows=plan.rows.filter(r=>r.sheet!==n);plan.offView=plan.offView.filter(r=>r.sheet!==n);
       plan.deleted=plan.deleted.filter(({row})=>row.sheet!==n);
       plan.scanned[n]=false;save();   // the caller reads the sheet again
-    }else message("This sheet was read by an earlier version of the app. Press Read sheet image to read it again: balloons you confirmed or entered results for are kept, the rest are replaced.");
+    }else message("This sheet was read by an earlier version of the app. Press Read sheet image to read it again: balloons with results are kept, confirmed ones are kept unless they sit in the border or title block, and the rest are replaced.");
   }
   placing=null;el("sheet").value=n;selected=selection??onPage()[0]?.id;redraw();
 }

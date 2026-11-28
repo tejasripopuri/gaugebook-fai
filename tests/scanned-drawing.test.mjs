@@ -44,3 +44,29 @@ test("border zones, surface finish marks, the title block and stray tolerances a
   const rows=generalRows(lines,view,W,H).map(r=>r.source).sort();
   assert.deepEqual(rows,[".062",".125 ±.010",".250 ±.005",".500 ±.010",".750 ±.010"]);
 });
+
+// ---- border and title block, found from the sheet's ruled lines ----------------------------
+import {onFurniture,clipViews} from "../public/drawing-areas.mjs";
+const furniture={frame:[.15,.024,.979,.971],blocks:[[.61,.868,.979,.971]]};
+
+test("text in the border or the title block is not a requirement, on any drawing", () => {
+  assert.equal(onFurniture(furniture,[.82,.012],[.81,.006,.83,.018]),true);   // zone number above the frame
+  assert.equal(onFurniture(furniture,[.08,.5],[.07,.49,.09,.51]),true);       // notes column left of the frame
+  assert.equal(onFurniture(furniture,[.9,.93],[.88,.92,.92,.94]),true);       // drawing number in the title block
+  assert.equal(onFurniture(furniture,[.5,.4],[.48,.39,.52,.41]),false);       // a dimension on a view
+  assert.equal(onFurniture(furniture,[.5,.02],[.48,.015,.52,.03]),false);     // text touching the frame line still counts
+});
+
+test("generalRows drops callouts outside the frame and in the title block", () => {
+  const W=1000,H=1000,box=(x,y,t)=>({text:t,bbox:{x0:x-30,y0:y-8,x1:x+30,y1:y+8}});
+  const lines=[box(500,400,".500 ±.010"),box(820,12,"2.000 ±.005"),box(900,930,"1.250 ±.010"),box(80,500,".750 ±.005")];
+  const views=[[.05,.03,.98,.97]];   // a view detection that ran into the border and title block
+  const all=generalRows(lines,views,W,H).map(r=>r.source);
+  const kept=generalRows(lines,views,W,H,null,furniture).map(r=>r.source);
+  assert.ok(all.length>kept.length);
+  assert.deepEqual(kept,[".500 ±.010"]);
+});
+
+test("views are clipped to the frame and title blocks are not views", () => {
+  assert.deepEqual(clipViews([[.1,.1,.5,.5],[.62,.87,.97,.97]],furniture),[[.15,.1,.5,.5]]);
+});
