@@ -265,7 +265,11 @@ async function scan(){
   try{
     const existing=[...plan.rows,...plan.offView].filter(r=>r.sheet===page);
     function insert(proposal,x,y,off=false){
-      const previous=existing.find(r=>r.source===proposal.source&&Math.hypot(r.xy[0]-x,r.xy[1]-y)<.025);
+      // The same callout read again (same text at the same place on the sheet), not another callout
+      // that happens to have the same value: those each get their own balloon.
+      const box=proposal.sourceBox,center=b=>[(b[0]+b[2])/2,(b[1]+b[3])/2];
+      const samePlace=r=>r.sourceBox&&box?Math.hypot(...center(r.sourceBox).map((v,i)=>v-center(box)[i]))<.006:Math.hypot(r.xy[0]-x,r.xy[1]-y)<.006;
+      const previous=existing.find(r=>r.source===proposal.source&&samePlace(r));
       if(previous){
         if(!off&&plan.offView.includes(previous)){
           previous.unplaced=false;previous.xy=[x,y];plan.offView.splice(plan.offView.indexOf(previous),1);plan.rows.push(previous);
@@ -273,7 +277,7 @@ async function scan(){
         return;
       }
       if(kept.some(r=>r.xy&&Math.hypot(r.xy[0]-x,r.xy[1]-y)<.02))return; // the inspector already reviewed this spot
-      if(plan.deleted.some(({row:r})=>r.sheet===page&&r.source===proposal.source&&Math.hypot(r.xy[0]-x,r.xy[1]-y)<.025))return;
+      if(plan.deleted.some(({row:r})=>r.sheet===page&&r.source===proposal.source&&samePlace(r)))return;
       const row=add(proposal,x,y);row.home=[x,y];
       row.name=proposal.name||row.name;row.unit=proposal.unit||"";
       row.unplaced=off;row.sourceBox=proposal.sourceBox;
